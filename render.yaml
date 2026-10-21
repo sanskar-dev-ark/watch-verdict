@@ -1,0 +1,33 @@
+# Render blueprint. Set the secret values in the Render dashboard after the first deploy.
+# The web service also runs the daily jobs (release calendar, Watch later alerts) because
+# Render cron jobs can't write files the web service reads.
+services:
+  - type: web
+    name: telly-verdict
+    runtime: node
+    region: frankfurt          # closest Render region to the London database
+    plan: starter              # always-on; the free plan sleeps, which stops the daily jobs
+    buildCommand: "true"       # no dependencies to install
+    startCommand: node server.js
+    healthCheckPath: /api/status
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: RUN_JOBS
+        value: "true"
+      - key: SITE_URL
+        sync: false
+      - key: TMDB_API_KEY
+        sync: false
+      - key: SUPABASE_URL
+        sync: false
+      - key: SUPABASE_PUBLISHABLE_KEY
+        sync: false
+      - key: SUPABASE_SECRET_KEY
+        sync: false
+      - key: TURNSTILE_SITE_KEY
+        sync: false
+      - key: GOOGLE_SIGN_IN
+        value: "false"
+      - key: AFFILIATE_URL_TEMPLATE
+        sync: false

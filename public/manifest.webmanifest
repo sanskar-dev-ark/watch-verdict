@@ -1,0 +1,14 @@
+{
+  "name": "Telly Verdict",
+  "short_name": "Telly Verdict",
+  "description": "What's new in UK cinemas and on streaming, and is it any good?",
+  "start_url": "/",
+  "scope": "/",
+  "display": "standalone",
+  "background_color": "#0f1417",
+  "theme_color": "#0f1417",
+  "lang": "en-GB",
+  "icons": [
+    { "src": "/icon.svg", "sizes": "any", "type": "image/svg+xml", "purpose": "any maskable" }
+  ]
+}

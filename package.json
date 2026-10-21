@@ -1,0 +1,17 @@
+{
+  "name": "telly-verdict",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "description": "UK streaming guide: new releases, ratings and chat",
+  "scripts": {
+    "start": "node server.js",
+    "releases": "node releases.js",
+    "mock": "node mock/tmdb-mock.js",
+    "dev:mock": "TMDB_API_KEY=mock TMDB_BASE=http://localhost:4010/3 node server.js",
+    "notify": "node notify-arrivals.js"
+  },
+  "engines": {
+    "node": ">=18"
+  }
+}

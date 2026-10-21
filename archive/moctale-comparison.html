@@ -1,0 +1,196 @@
+<title>Moctale vs Telly Verdict</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,800&family=Figtree:wght@400;500;600;700&family=JetBrains+Mono:wght@500&display=swap" rel="stylesheet">
+<style>
+/* Layout: one reading column with a wide comparison table; verdict chips carry the state. */
+:root{
+  --bg:#f6f7f5;--surface:#ffffff;--line:#dde3e0;--fg:#16201d;--muted:#5d6b67;
+  --accent:#b86e00;--them:#7a4fd6;--us:#127a52;--both:#3a6ea5;--gap:#c0392b;
+  --display:"Bricolage Grotesque",ui-sans-serif,system-ui,sans-serif;
+  --body:"Figtree",ui-sans-serif,system-ui,sans-serif;
+  --mono:"JetBrains Mono",ui-monospace,Menlo,monospace;
+}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){
+  --bg:#0f1417;--surface:#172026;--line:#2a3841;--fg:#edf1ee;--muted:#93a4ab;
+  --accent:#ffb547;--them:#b892ff;--us:#5fd3a0;--both:#7cc4ff;--gap:#ff7b6b;color-scheme:dark}}
+:root[data-theme="dark"]{
+  --bg:#0f1417;--surface:#172026;--line:#2a3841;--fg:#edf1ee;--muted:#93a4ab;
+  --accent:#ffb547;--them:#b892ff;--us:#5fd3a0;--both:#7cc4ff;--gap:#ff7b6b;color-scheme:dark}
+*{box-sizing:border-box}
+body{background:var(--bg);color:var(--fg);font:16px/1.6 var(--body)}
+.wrap{max-width:980px;margin:0 auto;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));padding-block:40px 64px}
+h1,h2,h3{font-family:var(--display);letter-spacing:-.02em;text-wrap:balance;margin:0}
+h1{font-size:clamp(32px,6vw,52px);font-weight:800;line-height:1.02}
+h2{font-size:26px;font-weight:800;margin-top:52px;margin-bottom:14px}
+h3{font-size:18px;font-weight:800;margin-bottom:6px}
+p{max-width:68ch;margin:0 0 12px}
+.eyebrow{font:500 12px var(--mono);letter-spacing:.1em;text-transform:uppercase;color:var(--accent)}
+.lede{font-size:19px;color:var(--muted);margin-top:14px}
+.meta{font:500 12px var(--mono);color:var(--muted);margin-top:18px}
+.score{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:12px;margin-top:28px}
+.score div{background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:14px 16px;display:grid;gap:2px}
+.score b{font:800 30px var(--display);font-variant-numeric:tabular-nums}
+.score span{color:var(--muted);font-size:14px}
+.chip{display:inline-block;font:600 11px var(--mono);letter-spacing:.04em;text-transform:uppercase;padding:2px 8px;border-radius:5px;border:1px solid currentColor;white-space:nowrap}
+.c-both{color:var(--both)}.c-them{color:var(--them)}.c-us{color:var(--us)}.c-gap{color:var(--gap)}.c-part{color:var(--accent)}
+.tablewrap{overflow-x:auto;border:1px solid var(--line);border-radius:12px;background:var(--surface)}
+table{border-collapse:collapse;width:100%;min-width:720px;font-size:14px}
+th,td{text-align:left;padding:10px 14px;border-bottom:1px solid var(--line);vertical-align:top}
+th{font:500 11px var(--mono);letter-spacing:.08em;text-transform:uppercase;color:var(--muted);background:var(--bg)}
+tr.group td{font:800 15px var(--display);background:var(--bg);padding-top:14px}
+td:first-child{font-weight:600;width:22%}
+td:nth-child(4){width:12%}
+.finding{border-left:3px solid var(--line);padding:4px 0 4px 16px;margin:18px 0}
+.finding.key{border-color:var(--accent)}
+.finding p{margin-bottom:6px}
+code{font:500 13px var(--mono);background:var(--surface);border:1px solid var(--line);padding:1px 5px;border-radius:4px;overflow-wrap:anywhere}
+.meter{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:12px;margin:16px 0}
+.meter div{background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:16px}
+.bar{display:flex;height:12px;border-radius:6px;overflow:hidden;margin:10px 0 6px}
+.bar i{display:block}
+.big{font:800 40px var(--display)}
+.prio{display:grid;gap:12px;margin-top:8px}
+.prio article{background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:16px 18px;display:grid;grid-template-columns:auto 1fr;gap:4px 14px}
+.prio .p{font:800 13px var(--mono);color:var(--bg);background:var(--fg);border-radius:6px;padding:3px 8px;align-self:start}
+.prio .p.p1{background:var(--gap)}.prio .p.p2{background:var(--accent)}
+.prio h3,.prio p{grid-column:2}
+.prio p{color:var(--muted);margin:0;font-size:15px}
+ul{padding-left:20px;max-width:68ch}li{margin-bottom:6px}
+.two{display:grid;grid-template-columns:1fr 1fr;gap:24px}
+@media (max-width:700px){.two{grid-template-columns:1fr}}
+.note{font-size:14px;color:var(--muted)}
+</style>
+
+<div class="wrap">
+  <span class="eyebrow">Competitor teardown · October 2026</span>
+  <h1>Moctale vs Telly Verdict</h1>
+  <p class="lede">How Moctale works, based on its public pages, and how our UK site compares, feature by feature. It ends with the gaps worth closing before launch.</p>
+  <p class="meta">Sources: moctale.in public pages and page metadata, scraped 17–21 Oct 2026, plus public user comments on Reddit. Telly Verdict local build as of 21 Oct 2026.</p>
+
+  <div class="score">
+    <div><b>9</b><span>features both sites have</span></div>
+    <div><b>8</b><span>where Telly Verdict does more</span></div>
+    <div><b>6</b><span>where Moctale does more</span></div>
+    <div><b>3</b><span>platform gaps that block our launch</span></div>
+  </div>
+
+  <h2>What sits behind Moctale</h2>
+  <p>Most of Moctale needs an account. Profiles, person pages and the Explore pages all redirect to a login page that search engines are told not to index. Only the home page and title pages are public.</p>
+
+  <div class="finding key"><h3>Built for search and sharing</h3>
+    <p>Title pages use readable addresses such as <code>/content/carrie-2026</code>, with matching patterns for people (<code>/person/mike-flanagan</code>) and browsing (<code>/explore/country/usa</code>, <code>/explore/language/english</code>). Each title page ships its own search description, cast list and poster preview for social sharing, and marks itself as a TV show or film. The page code shows a Next.js site rendered on the server.</p></div>
+
+  <div class="finding key"><h3>Reviews are the sign-up hook</h3>
+    <p>Logged-out visitors see the meter and four sample reviews. The sample reviews use the same names, wording and like counts on every title, so they are placeholders, not real reviews. Real reviews sit behind "Create an account to see reviews".</p></div>
+
+  <div class="finding"><h3>Login is guarded</h3>
+    <p>Sign-in takes a username or a phone number, has a "Forgot password" flow, and runs a Cloudflare bot check before submitting.</p></div>
+
+  <div class="finding"><h3>They host their own images</h3>
+    <p>Posters and banners come from Moctale's own image server, not from TMDB. That lets them use custom artwork for featured sections and stops them depending on another service's image links.</p></div>
+
+  <div class="finding"><h3>Home sections are hand-picked and commercial</h3>
+    <p>Talk Of The Town mixes films, shows and trailer drops with labels such as New Trailer, Teaser Trailer, New Movie, New Show and Encore Re-release. "Watch It With District" promotes a cinema-ticket partner. There is an Editor's Pick of the Week, and per-service sections ("Don't Miss These on Netflix", JioHotstar, Prime, Crunchyroll), each with its own banner image. There is an ad slot on every page, app-store buttons, and an "Advertise with Us" page.</p></div>
+
+  <div class="finding"><h3>Influencer distribution</h3>
+    <p>The three founders are film YouTubers with several million subscribers between them, and each has a Moctale profile linked from the About page. Community channels on Discord, WhatsApp, Instagram and Reddit come straight from those audiences.</p></div>
+
+  <h2>The meter works differently</h2>
+  <p>Moctale's headline figure is the share of the single most common verdict. Ours is the share who said Go for it or Perfection. The same votes on Carrie give very different headlines:</p>
+  <div class="meter">
+    <div><span class="eyebrow">Moctale meter</span><div class="big">71%</div>
+      <div class="bar"><i style="width:1%;background:var(--gap)"></i><i style="width:3%;background:var(--accent)"></i><i style="width:71%;background:var(--us)"></i><i style="width:25%;background:var(--them)"></i></div>
+      <span class="note">800 of 1,128 votes were Go for it, the leading verdict</span></div>
+    <div><span class="eyebrow">Telly Verdict meter</span><div class="big">96%</div>
+      <div class="bar"><i style="width:1%;background:var(--gap)"></i><i style="width:3%;background:var(--accent)"></i><i style="width:71%;background:var(--us)"></i><i style="width:25%;background:var(--them)"></i></div>
+      <span class="note">Go for it 71% + Perfection 25%</span></div>
+  </div>
+  <p>Our version answers "should I watch this?" more directly, but it bunches well-liked titles near 100%. Moctale's tells you the mood but can drop when votes split between Go for it and Perfection, which reads oddly for a great title. Either works. We should pick one on purpose and explain it on the page.</p>
+
+  <h2>Feature by feature</h2>
+  <div class="tablewrap"><table>
+    <thead><tr><th>Feature</th><th>Moctale</th><th>Telly Verdict</th><th>Status</th></tr></thead>
+    <tbody>
+      <tr class="group"><td colspan="4">Discovery</td></tr>
+      <tr><td>Home sections</td><td>Hand-picked sections with custom banners, trailer and re-release labels</td><td>Automatic sections from TMDB trending, UK cinemas and per-service lists, plus editor's picks</td><td><span class="chip c-both">Both</span></td></tr>
+      <tr><td>Per-service sections</td><td>Netflix, JioHotstar, Prime, Crunchyroll</td><td>Netflix, Prime Video, Disney+, Apple TV, BBC iPlayer, NOW</td><td><span class="chip c-both">Both</span></td></tr>
+      <tr><td>Trailer and teaser drops as events</td><td>Labelled on home</td><td>Trailer link on the title page only</td><td><span class="chip c-them">Them</span></td></tr>
+      <tr><td>Release calendar</td><td>"Find what's upcoming" in theatres and on streaming (behind login)</td><td>Public UK calendar by week across cinema, streaming and TV channels, filterable by service</td><td><span class="chip c-us">Us, deeper</span></td></tr>
+      <tr><td>Explore by country, language, genre</td><td>Yes, behind login</td><td>Yes, public, plus filter by UK service and sort</td><td><span class="chip c-both">Both</span></td></tr>
+      <tr><td>Search</td><td>Yes</td><td>Titles, people and members</td><td><span class="chip c-both">Both</span></td></tr>
+      <tr><td>Community top-rated chart</td><td>Not seen publicly</td><td>Ranked by meter, minimum two votes</td><td><span class="chip c-us">Us</span></td></tr>
+
+      <tr class="group"><td colspan="4">Title pages</td></tr>
+      <tr><td>Core facts</td><td>Type, year, runtime, showrunner, country, language, age rating</td><td>Same, plus BBFC certificate, UK cinema date, UK streaming date, seasons</td><td><span class="chip c-us">Us, deeper</span></td></tr>
+      <tr><td>Tags</td><td>Curated: Based on Book, Remake, genre</td><td>TMDB genres and keywords</td><td><span class="chip c-part">Partial</span></td></tr>
+      <tr><td>Cast and crew pages</td><td>Yes</td><td>Yes, with filmography</td><td><span class="chip c-both">Both</span></td></tr>
+      <tr><td>Where to watch</td><td>Mentioned in page description</td><td>UK stream, rent and buy, with service logos and a link to all options</td><td><span class="chip c-us">Us, deeper</span></td></tr>
+      <tr><td>Cinema ticket booking</td><td>Partner section (District)</td><td>Not built</td><td><span class="chip c-gap">Gap</span></td></tr>
+      <tr><td>Recommendations</td><td>Not seen publicly</td><td>"If you liked this"</td><td><span class="chip c-us">Us</span></td></tr>
+
+      <tr class="group"><td colspan="4">Rating and reviews</td></tr>
+      <tr><td>Four verdicts and meter</td><td>Skip, Timepass, Go for it, Perfection</td><td>Same four, different meter maths (see above)</td><td><span class="chip c-both">Both</span></td></tr>
+      <tr><td>Part-by-part scores</td><td>No</td><td>Story, Acting, Direction, Visuals, Sound, Pacing out of 10</td><td><span class="chip c-us">Us</span></td></tr>
+      <tr><td>Written reviews, likes, comments</td><td>Yes</td><td>Yes, plus spoiler flag, sort and filter by verdict</td><td><span class="chip c-both">Both</span></td></tr>
+      <tr><td>Reviews public to visitors</td><td>No: sample reviews, real ones need sign-up</td><td>Yes, fully public</td><td><span class="chip c-part">Choice</span></td></tr>
+      <tr><td>Live discussion per title</td><td>No (community lives on Discord)</td><td>Chat thread with spoiler hiding</td><td><span class="chip c-us">Us</span></td></tr>
+
+      <tr class="group"><td colspan="4">Lists and social</td></tr>
+      <tr><td>Watched, Watch later, collections</td><td>Yes</td><td>Yes, plus editor's-pick collections on home</td><td><span class="chip c-both">Both</span></td></tr>
+      <tr><td>Profiles and following</td><td>Yes</td><td>Yes, with following feed and verdict split</td><td><span class="chip c-both">Both</span></td></tr>
+      <tr><td>Points, levels, badges, leaderboard</td><td>Not seen publicly</td><td>11 badges, 7 levels, weekly, monthly and all-time boards</td><td><span class="chip c-us">Us</span></td></tr>
+      <tr><td>Share cards for Instagram and Snapchat</td><td>Requested by users, not built</td><td>Not built</td><td><span class="chip c-gap">Gap for both</span></td></tr>
+      <tr><td>Notifications</td><td>Likely in apps (not checked)</td><td>None</td><td><span class="chip c-gap">Gap</span></td></tr>
+
+      <tr class="group"><td colspan="4">Platform</td></tr>
+      <tr><td>Search-friendly pages</td><td>Server-rendered, readable addresses, per-title search and sharing details</td><td>Single-page app, addresses like <code>/title/tv-1000</code>, no per-title details for search engines</td><td><span class="chip c-gap">Blocker</span></td></tr>
+      <tr><td>Account security</td><td>Bot check, password reset, phone login</td><td>Username and password only, no reset, no bot check</td><td><span class="chip c-gap">Blocker</span></td></tr>
+      <tr><td>Data storage</td><td>Production backend</td><td>One JSON file</td><td><span class="chip c-gap">Blocker</span></td></tr>
+      <tr><td>iOS and Android apps</td><td>Yes</td><td>Responsive website only</td><td><span class="chip c-them">Them</span></td></tr>
+      <tr><td>Own image hosting</td><td>Yes</td><td>Links to TMDB images</td><td><span class="chip c-them">Them</span></td></tr>
+      <tr><td>Ads and partner revenue</td><td>Ad slots, ticketing partner, advertise page</td><td>None yet</td><td><span class="chip c-them">Them</span></td></tr>
+    </tbody>
+  </table></div>
+  <p class="note">"Not seen publicly" means the feature wasn't visible on public pages. It may exist behind login or in the apps.</p>
+
+  <h2>What Moctale users say</h2>
+  <div class="two">
+    <div><h3>They like</h3><ul>
+      <li>The four simple verdicts and the meter, which several users call the one thing that sets Moctale apart.</li>
+      <li>A smooth interface that felt polished on day one.</li>
+    </ul></div>
+    <div><h3>They complain about</h3><ul>
+      <li>Too much mixed together: Reddit-style threads, Discord-style chat and Letterboxd-style logging in one app.</li>
+      <li>Verdict-only "blank" reviews sitting among written ones. Users want them separated.</li>
+      <li>No way to share a rating as an Instagram or Snapchat story card.</li>
+      <li>Some want games covered too.</li>
+    </ul></div>
+  </div>
+  <p class="note">Paraphrased from public posts in r/moctale and r/pj_explained. We can't read full threads from here, so this list covers the main themes, not every comment.</p>
+
+  <h2>What to build next</h2>
+  <div class="prio">
+    <article><span class="p p1">P1</span><h3>Search-friendly title pages</h3><p>Serve each title, person and calendar week as real HTML with readable addresses (<code>/film/paddington-in-peru-2024</code>), page titles, descriptions and social preview images. Without this, search engines can't index us, and that's where most visitors to a site like this will come from.</p></article>
+    <article><span class="p p1">P1</span><h3>Real accounts</h3><p>Move to Postgres (Supabase), add email verification, password reset, a bot check on sign-up and login, and rate limits. Sign-in with Google and Apple will help sign-up rates.</p></article>
+    <article><span class="p p1">P1</span><h3>Pick the meter maths</h3><p>Keep "% Go for it or Perfection", or switch to Moctale's "% of top verdict", and explain it in one line under the meter.</p></article>
+    <article><span class="p p2">P2</span><h3>UK cinema tickets</h3><p>Add "Book tickets" on films in cinemas, linking to Odeon, Cineworld, Vue, Everyman and Picturehouse through an affiliate network. This mirrors Moctale's District section and is our clearest first source of revenue.</p></article>
+    <article><span class="p p2">P2</span><h3>Share cards</h3><p>Generate a portrait image with poster, verdict and score for Instagram and Snapchat stories. Moctale users are asking for this and Moctale doesn't have it yet.</p></article>
+    <article><span class="p p2">P2</span><h3>Trailer drops and hand-picked home sections</h3><p>Label new trailers and teasers on home, and let editors set a section's banner image and order alongside the automatic sections.</p></article>
+    <article><span class="p p2">P2</span><h3>Notifications</h3><p>Tell people when someone likes or replies to their review, follows them, or when a title on their Watch later list arrives on a UK service or in cinemas.</p></article>
+    <article><span class="p">P3</span><h3>Phone app and own images</h3><p>Start with an installable web app (home-screen icon, offline shell), then native apps once there's traction. Cache posters on our own storage.</p></article>
+  </div>
+
+  <h2>Where we're already ahead</h2>
+  <ul>
+    <li>Built around the UK: BBFC certificates, UK cinema and streaming dates, and UK services including BBC iPlayer, ITVX, Channel 4 and NOW.</li>
+    <li>A public release calendar covering cinemas, streaming and UK TV channels in one view.</li>
+    <li>Scores for six parts of a film alongside the four verdicts.</li>
+    <li>A discussion thread on every title, instead of sending people off to Discord.</li>
+    <li>Points, levels, badges and leaderboards that reward useful reviews.</li>
+    <li>Fully public reviews, which help search engines once pages are indexable.</li>
+  </ul>
+
+  <h2>How this was done</h2>
+  <p class="note">We studied only what any visitor can see: public pages, their page metadata, and public posts. We did not log in to Moctale, call its private APIs, or inspect its apps, so features behind login are inferred from Moctale's own About page and user posts and marked as such. The Telly Verdict side reflects the local build, tested against a stand-in for TMDB because the TMDB key isn't set up yet.</p>
+</div>

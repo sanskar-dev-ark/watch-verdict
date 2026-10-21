@@ -1,0 +1,222 @@
+<!DOCTYPE html>
+<html lang="en-GB">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>StreamUK – What's New to Watch</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#0b0b10;--card:#16161f;--muted:#9a9ab0;--text:#f2f2f7;--accent:#e50914;--line:#26263a}
+*{box-sizing:border-box;margin:0;padding:0}
+body{background:var(--bg);color:var(--text);font-family:Inter,system-ui,sans-serif}
+header{position:sticky;top:0;z-index:10;background:rgba(11,11,16,.92);backdrop-filter:blur(8px);border-bottom:1px solid var(--line)}
+.bar{max-width:1280px;margin:auto;display:flex;align-items:center;gap:16px;padding:14px 16px;flex-wrap:wrap}
+.logo{font-weight:800;font-size:22px}.logo span{color:var(--accent)}
+.flag{font-size:12px;color:var(--muted);border:1px solid var(--line);padding:3px 8px;border-radius:99px}
+input[type=search]{flex:1;min-width:180px;background:var(--card);border:1px solid var(--line);color:var(--text);padding:10px 14px;border-radius:10px}
+main{max-width:1280px;margin:auto;padding:16px}
+.tabs,.chips{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:14px}
+button{font:inherit;cursor:pointer}
+.tab,.chip{background:var(--card);border:1px solid var(--line);color:var(--text);padding:8px 14px;border-radius:99px;font-size:14px}
+.tab.on{background:var(--text);color:var(--bg)}
+.chip.on{border-color:var(--accent);background:#2a0d10}
+h2{font-size:20px;margin:22px 0 12px}
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:16px}
+.card{background:var(--card);border-radius:12px;overflow:hidden;cursor:pointer;transition:transform .15s}
+.card:hover{transform:translateY(-4px)}
+.poster{aspect-ratio:2/3;background:#222 center/cover;position:relative}
+.badge{position:absolute;top:8px;left:8px;background:rgba(0,0,0,.75);font-size:11px;padding:3px 7px;border-radius:6px}
+.rating{position:absolute;top:8px;right:8px;background:#f5c518;color:#000;font-weight:800;font-size:11px;padding:3px 6px;border-radius:6px}
+.meta{padding:10px}.meta b{display:block;font-size:14px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.meta small{color:var(--muted);font-size:12px}
+.logos{display:flex;gap:4px;margin-top:6px}.logos img{width:20px;height:20px;border-radius:5px}
+.notice{background:var(--card);border:1px solid var(--line);padding:14px;border-radius:12px;margin-bottom:16px;font-size:14px;color:var(--muted);display:flex;gap:10px;flex-wrap:wrap;align-items:center}
+.notice input{background:var(--bg);border:1px solid var(--line);color:var(--text);padding:8px;border-radius:8px;min-width:240px}
+.notice button{background:var(--accent);border:0;color:#fff;padding:8px 14px;border-radius:8px}
+dialog{background:var(--card);color:var(--text);border:1px solid var(--line);border-radius:16px;max-width:760px;width:calc(100% - 32px);padding:0}
+dialog::backdrop{background:rgba(0,0,0,.7)}
+.hero{aspect-ratio:16/7;background:#222 center/cover}
+.dbody{padding:20px}.dbody p{color:#c8c8d8;line-height:1.55;margin:10px 0}
+.close{position:absolute;top:10px;right:10px;background:#000a;color:#fff;border:0;border-radius:99px;width:34px;height:34px}
+.where{display:flex;gap:10px;flex-wrap:wrap;margin-top:10px}.where div{display:flex;align-items:center;gap:6px;font-size:13px;background:var(--bg);padding:6px 10px;border-radius:8px}
+.where img{width:24px;height:24px;border-radius:6px}
+.empty{color:var(--muted);padding:40px 0;text-align:center}
+footer{color:var(--muted);font-size:12px;text-align:center;padding:30px 16px}
+</style>
+</head>
+<body>
+<header><div class="bar">
+  <div class="logo">Stream<span>UK</span></div><span class="flag">🇬🇧 United Kingdom</span>
+  <input type="search" id="q" placeholder="Search films & series available in the UK…">
+</div></header>
+
+<main>
+  <div class="notice" id="keybox">
+    <span>Running on demo data. Add a free <a href="https://www.themoviedb.org/settings/api" target="_blank" style="color:#fff">TMDB API key</a> for live UK listings:</span>
+    <input id="key" placeholder="TMDB API key (v3)"><button id="savekey">Go live</button>
+  </div>
+
+  <div class="tabs" id="tabs">
+    <button class="tab on" data-v="new">New releases</button>
+    <button class="tab" data-v="upcoming">Coming soon</button>
+    <button class="tab" data-v="trending">Trending in UK</button>
+  </div>
+  <div class="tabs" id="types">
+    <button class="tab on" data-t="movie">Films</button>
+    <button class="tab" data-t="tv">Series</button>
+  </div>
+  <div class="chips" id="chips"></div>
+
+  <h2 id="title">New releases</h2>
+  <div class="grid" id="grid"></div>
+</main>
+
+<dialog id="dlg"><div style="position:relative"><button class="close" onclick="dlg.close()">✕</button><div id="dcontent"></div></div></dialog>
+<footer>Streaming availability for the UK (region GB) powered by TMDB &amp; JustWatch. This product uses the TMDB API but is not endorsed or certified by TMDB.</footer>
+
+<script>
+// UK watch-provider IDs on TMDB (region GB)
+const PROVIDERS = [
+  {id:8,   name:"Netflix"},
+  {id:9,   name:"Prime Video"},
+  {id:350, name:"Apple TV+"},
+  {id:337, name:"Disney+"},
+  {id:39,  name:"NOW"},
+  {id:38,  name:"BBC iPlayer"},
+  {id:41,  name:"ITVX"},
+  {id:103, name:"Channel 4"},
+  {id:584, name:"discovery+"},
+  {id:29,  name:"Sky Go"},
+];
+const IMG = "https://image.tmdb.org/t/p/";
+const state = {view:"new", type:"movie", providers:new Set(), q:"", key: (()=>{try{return localStorage.getItem("tmdbKey")||""}catch{return ""}})()};
+let logoMap = {};
+
+const today = new Date().toISOString().slice(0,10);
+const daysFrom = n => new Date(Date.now()+n*864e5).toISOString().slice(0,10);
+
+async function tmdb(path, params={}){
+  const u = new URL("https://api.themoviedb.org/3"+path);
+  u.searchParams.set("api_key", state.key);
+  u.searchParams.set("language","en-GB");
+  for (const [k,v] of Object.entries(params)) u.searchParams.set(k,v);
+  const r = await fetch(u); if(!r.ok) throw new Error(r.status); return r.json();
+}
+
+function buildQuery(){
+  const isMovie = state.type==="movie";
+  const dateKey = isMovie ? "primary_release_date" : "first_air_date";
+  const p = {
+    watch_region:"GB", region:"GB",
+    with_watch_monetization_types:"flatrate|free|ads",
+    with_watch_providers: (state.providers.size ? [...state.providers] : PROVIDERS.map(x=>x.id)).join("|"),
+  };
+  if (state.view==="new"){ p[dateKey+".gte"]=daysFrom(-60); p[dateKey+".lte"]=today; p.sort_by=dateKey+".desc"; p["vote_count.gte"]=5; }
+  if (state.view==="upcoming"){ delete p.with_watch_providers; delete p.watch_region; delete p.with_watch_monetization_types;
+    p[dateKey+".gte"]=daysFrom(1); p[dateKey+".lte"]=daysFrom(90); p.sort_by="popularity.desc";
+    if(isMovie){ p.with_release_type="3|4"; } else { p.with_origin_country="GB"; } }
+  if (state.view==="trending"){ p.sort_by="popularity.desc"; }
+  return p;
+}
+
+async function load(){
+  const grid = document.getElementById("grid");
+  document.getElementById("title").textContent =
+    ({new:"New on UK streaming",upcoming:"Coming soon to the UK",trending:"Trending on UK streaming"})[state.view] + (state.type==="movie"?" · Films":" · Series");
+  grid.innerHTML = '<div class="empty">Loading…</div>';
+  if(!state.key){ return render(filterDemo()); }
+  try{
+    let data;
+    if (state.q) data = await tmdb(`/search/${state.type}`, {query:state.q, region:"GB"});
+    else data = await tmdb(`/discover/${state.type}`, buildQuery());
+    const items = data.results.slice(0,20);
+    // fetch UK providers per title
+    await Promise.all(items.map(async it=>{
+      try{ const w = await tmdb(`/${state.type}/${it.id}/watch/providers`);
+        const gb = w.results?.GB; it.providers = [...(gb?.flatrate||[]),...(gb?.free||[]),...(gb?.ads||[])]; it.link = gb?.link;
+      }catch{ it.providers=[] }
+    }));
+    render(items.map(norm));
+  }catch(e){ grid.innerHTML = `<div class="empty">Couldn't reach TMDB (${e.message}). Check your API key.</div>`; }
+}
+
+const norm = it => ({
+  id:it.id, title:it.title||it.name, date:it.release_date||it.first_air_date||"",
+  overview:it.overview, rating:it.vote_average, poster: it.poster_path?IMG+"w342"+it.poster_path:"",
+  backdrop: it.backdrop_path?IMG+"w780"+it.backdrop_path:"", providers:(it.providers||[]).map(p=>({name:p.provider_name, logo:IMG+"w92"+p.logo_path})), link:it.link
+});
+
+function render(items){
+  const grid = document.getElementById("grid");
+  if(!items.length){ grid.innerHTML='<div class="empty">Nothing found for these filters.</div>'; return; }
+  grid.innerHTML = items.map((it,i)=>`
+    <div class="card" data-i="${i}">
+      <div class="poster" style="background-image:url('${it.poster}')">
+        ${it.date?`<span class="badge">${fmt(it.date)}</span>`:""}
+        ${it.rating?`<span class="rating">★ ${it.rating.toFixed(1)}</span>`:""}
+      </div>
+      <div class="meta"><b>${esc(it.title)}</b><small>${it.providers.map(p=>p.name).slice(0,2).join(" · ")||"—"}</small>
+        <div class="logos">${it.providers.slice(0,4).map(p=>p.logo?`<img src="${p.logo}" alt="${esc(p.name)}" title="${esc(p.name)}">`:"").join("")}</div></div>
+    </div>`).join("");
+  grid.querySelectorAll(".card").forEach(c=>c.onclick=()=>openItem(items[c.dataset.i]));
+}
+
+function openItem(it){
+  document.getElementById("dcontent").innerHTML = `
+    <div class="hero" style="background-image:url('${it.backdrop||it.poster}')"></div>
+    <div class="dbody"><h2 style="margin:0">${esc(it.title)}</h2>
+      <small style="color:var(--muted)">${it.date?"UK release: "+fmt(it.date):""} ${it.rating?" · ★ "+it.rating.toFixed(1):""}</small>
+      <p>${esc(it.overview||"No synopsis yet.")}</p>
+      <b>Watch in the UK on</b>
+      <div class="where">${it.providers.length?it.providers.map(p=>`<div>${p.logo?`<img src="${p.logo}">`:""}${esc(p.name)}</div>`).join(""):"<div>Not yet streaming in the UK</div>"}</div>
+      ${it.link?`<p><a href="${it.link}" target="_blank" style="color:#fff">See all UK options →</a></p>`:""}
+    </div>`;
+  dlg.showModal();
+}
+
+const fmt = d => new Date(d).toLocaleDateString("en-GB",{day:"numeric",month:"short",year:"numeric"});
+const esc = s => String(s??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+
+// ---------- Demo data (used until an API key is added) ----------
+const DEMO = [
+  ["movie","The Last Lighthouse","Netflix",-3,7.4],["movie","Harbour Lights","Prime Video",-6,6.9],
+  ["movie","Northern Line","BBC iPlayer",-9,7.8],["movie","Crown Court Blues","ITVX",-12,6.5],
+  ["movie","Orbital Drift","Apple TV+",-15,7.1],["movie","Fen Country","Channel 4",-20,7.0],
+  ["movie","Galaxy Kids 3","Disney+",-25,6.8],["movie","The Heist at Hatton","NOW",-30,7.2],
+  ["movie","Deep Seas Britain","discovery+",-34,8.0],["movie","Midnight in Margate","Netflix",14,0],
+  ["movie","Sovereign","Prime Video",28,0],["movie","Glasgow Rain","Apple TV+",45,0],
+  ["tv","Peaky Streets S2","BBC iPlayer",-2,8.3],["tv","The Detectorists' Return","BBC iPlayer",-8,8.5],
+  ["tv","Bake Off: Winter","Channel 4",-4,7.6],["tv","Slow Lane","Apple TV+",-11,8.1],
+  ["tv","Island Love","ITVX",-5,5.9],["tv","Cold Case Cornwall","Netflix",-18,7.3],
+  ["tv","Gold Rush UK","discovery+",-7,7.0],["tv","The Shard","Prime Video",-22,7.4],
+  ["tv","Andor Legacy","Disney+",-27,8.2],["tv","Westminster","NOW",20,0],["tv","Moorland","Netflix",40,0],
+].map(([type,title,prov,off,rating],i)=>({type,id:i,title,date:daysFrom(off),rating,
+  overview:"Demo listing – connect a TMDB key to see real UK releases, synopses and artwork.",
+  poster:`https://picsum.photos/seed/uk${i}/342/513`,backdrop:`https://picsum.photos/seed/uk${i}/780/340`,
+  providers:[{name:prov,logo:""}],provId:PROVIDERS.find(p=>p.name===prov)?.id}));
+
+function filterDemo(){
+  return DEMO.filter(d=>d.type===state.type)
+    .filter(d=>state.view==="upcoming" ? d.date>today : d.date<=today)
+    .filter(d=>!state.providers.size || state.providers.has(d.provId))
+    .filter(d=>!state.q || d.title.toLowerCase().includes(state.q.toLowerCase()))
+    .sort((a,b)=> state.view==="trending" ? b.rating-a.rating : state.view==="upcoming" ? a.date.localeCompare(b.date) : b.date.localeCompare(a.date));
+}
+
+// ---------- UI wiring ----------
+const chips = document.getElementById("chips");
+chips.innerHTML = PROVIDERS.map(p=>`<button class="chip" data-id="${p.id}">${p.name}</button>`).join("");
+chips.onclick = e=>{ const b=e.target.closest(".chip"); if(!b) return; const id=+b.dataset.id;
+  state.providers.has(id)?state.providers.delete(id):state.providers.add(id); b.classList.toggle("on"); load(); };
+function tabGroup(el,key,attr){ el.onclick=e=>{const b=e.target.closest(".tab"); if(!b) return;
+  el.querySelectorAll(".tab").forEach(t=>t.classList.remove("on")); b.classList.add("on"); state[key]=b.dataset[attr]; load(); }; }
+tabGroup(document.getElementById("tabs"),"view","v");
+tabGroup(document.getElementById("types"),"type","t");
+let t; document.getElementById("q").oninput = e=>{ clearTimeout(t); t=setTimeout(()=>{state.q=e.target.value.trim(); load();},350); };
+document.getElementById("savekey").onclick = ()=>{ state.key=document.getElementById("key").value.trim();
+  try{localStorage.setItem("tmdbKey",state.key)}catch{} document.getElementById("keybox").style.display=state.key?"none":""; load(); };
+if(state.key) document.getElementById("keybox").style.display="none";
+load();
+</script>
+</body>
+</html>

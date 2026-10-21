@@ -1,0 +1,285 @@
+<title>Telly Verdict</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,800&family=Figtree:wght@400;500;600&family=JetBrains+Mono:wght@500&display=swap" rel="stylesheet">
+<style>
+:root{
+  color-scheme:dark;
+  --ink:#0f1417;--panel:#172026;--panel2:#1e2a31;--line:#2a3841;
+  --text:#edf1ee;--muted:#93a4ab;--amber:#ffb547;--sky:#7cc4ff;
+  --skip:#ff6b6b;--time:#ffb547;--go:#5fd3a0;--perf:#b892ff;
+  --display:"Bricolage Grotesque",ui-sans-serif,system-ui,sans-serif;
+  --body:"Figtree",ui-sans-serif,system-ui,sans-serif;
+  --mono:"JetBrains Mono",ui-monospace,Menlo,monospace;
+}
+*{box-sizing:border-box}
+body{background:var(--ink);color:var(--text);font:15px/1.5 var(--body);margin:0}
+.wrap{max-width:1180px;margin:0 auto;padding-inline:16px;padding-block:0 48px}
+header{position:sticky;top:env(safe-area-inset-top,0px);z-index:5;background:color-mix(in srgb,var(--ink) 92%,transparent);backdrop-filter:blur(10px);border-bottom:1px solid var(--line)}
+.hbar{max-width:1180px;margin:0 auto;padding:12px 16px;display:flex;gap:14px;align-items:center;flex-wrap:wrap}
+.brand{font:800 22px/1 var(--display);letter-spacing:-.02em;display:flex;align-items:center;gap:8px}
+.brand i{width:12px;height:12px;border-radius:3px;background:var(--amber);box-shadow:14px 0 0 var(--sky),28px 0 0 var(--go);margin-right:30px}
+.region{font:500 11px var(--mono);color:var(--muted);letter-spacing:.08em;text-transform:uppercase}
+#q{flex:1;min-width:0;background:var(--panel);border:1px solid var(--line);color:var(--text);border-radius:10px;padding:9px 12px;font:inherit}
+#q:focus,button:focus-visible,input:focus-visible{outline:2px solid var(--sky);outline-offset:2px}
+.intro{padding-block:28px 8px;display:grid;gap:6px}
+.intro h1{font:800 clamp(28px,5vw,44px)/1.05 var(--display);letter-spacing:-.03em;margin:0;text-wrap:balance;max-width:20ch}
+.intro p{color:var(--muted);margin:0;max-width:62ch}
+.filters{display:flex;gap:8px;flex-wrap:wrap;margin-block:16px}
+.f{background:var(--panel);border:1px solid var(--line);color:var(--text);border-radius:99px;padding:6px 12px;font:500 13px var(--body);cursor:pointer}
+.f[aria-pressed="true"]{background:var(--text);color:var(--ink);border-color:var(--text)}
+.sep{width:1px;background:var(--line);margin-inline:4px}
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(168px,1fr));gap:18px}
+.card{background:none;border:0;color:inherit;text-align:left;padding:0;cursor:pointer;font:inherit;display:grid;gap:8px}
+.poster{aspect-ratio:2/3;max-width:100%;border-radius:10px;position:relative;overflow:hidden;padding:14px;display:flex;flex-direction:column;justify-content:flex-end;transition:transform .18s}
+.card:hover .poster{transform:translateY(-3px)}
+.poster .pt{font:800 21px/1.02 var(--display);letter-spacing:-.02em;text-wrap:balance;color:#fff;text-shadow:0 2px 12px #0006}
+.poster .kind{position:absolute;top:10px;left:10px;font:500 10px var(--mono);letter-spacing:.08em;text-transform:uppercase;background:#0008;color:#fff;padding:3px 7px;border-radius:5px}
+.poster .score{position:absolute;top:10px;right:10px;font:500 11px var(--mono);background:#000a;color:#fff;padding:3px 7px;border-radius:5px}
+.cmeta{display:grid;gap:2px}
+.cmeta b{font-weight:600;font-size:14px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.cmeta small{color:var(--muted);font-size:12px;display:flex;gap:6px;align-items:center}
+.dot{width:8px;height:8px;border-radius:2px;flex:none}
+.vbar{display:flex;height:4px;border-radius:2px;overflow:hidden;background:var(--line)}
+.vbar span{display:block}
+.empty{color:var(--muted);padding:40px 0}
+
+/* detail */
+dialog{background:var(--ink);color:var(--text);border:1px solid var(--line);border-radius:16px;padding:0;width:min(920px,calc(100% - 24px));max-height:calc(100% - 24px)}
+dialog::backdrop{background:#000b}
+.dhead{padding:24px;display:grid;gap:10px;position:relative}
+.dhead h2{font:800 clamp(26px,4.5vw,40px)/1.05 var(--display);letter-spacing:-.03em;margin:0;text-wrap:balance;color:#fff}
+.dhead .facts{display:flex;gap:8px;flex-wrap:wrap;font:500 12px var(--mono);color:#ffffffd0}
+.dhead .facts span{background:#0005;padding:3px 8px;border-radius:5px}
+.dhead p{margin:0;max-width:62ch;color:#ffffffe0}
+.x{position:absolute;top:14px;right:14px;background:#0007;border:0;color:#fff;width:34px;height:34px;border-radius:99px;font-size:16px;cursor:pointer}
+.dbody{display:grid;grid-template-columns:1fr 1fr;gap:24px;padding:24px}
+@media (max-width:760px){.dbody{grid-template-columns:1fr}}
+h3{font:800 18px var(--display);margin:0 0 10px;letter-spacing:-.01em}
+.label{font:500 11px var(--mono);letter-spacing:.08em;text-transform:uppercase;color:var(--muted)}
+.verdicts{display:grid;grid-template-columns:repeat(4,1fr);gap:6px}
+.vbtn{border:1px solid var(--line);background:var(--panel);color:var(--text);border-radius:10px;padding:10px 4px;font:600 13px var(--body);cursor:pointer;display:grid;gap:2px;justify-items:center}
+.vbtn small{font:500 11px var(--mono);color:var(--muted)}
+.vbtn[aria-pressed="true"]{border-color:var(--c);background:color-mix(in srgb,var(--c) 18%,var(--panel))}
+.aspect{display:grid;grid-template-columns:90px 1fr 34px;gap:10px;align-items:center;margin-top:8px}
+.aspect span:last-child{font:500 13px var(--mono);text-align:right;font-variant-numeric:tabular-nums}
+input[type=range]{width:100%;accent-color:var(--amber)}
+.save{margin-top:14px;background:var(--amber);color:#1a1205;border:0;border-radius:10px;padding:10px 16px;font:600 14px var(--body);cursor:pointer}
+.save:disabled{opacity:.5;cursor:default}
+.status{font-size:13px;color:var(--muted);margin-left:10px}
+.agg{background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:14px;display:grid;gap:10px;margin-bottom:18px}
+.aggrow{display:grid;grid-template-columns:90px 1fr 34px;gap:10px;align-items:center;font-size:13px}
+.meter{height:6px;background:var(--line);border-radius:3px;overflow:hidden}.meter i{display:block;height:100%;background:var(--sky)}
+.aggrow b{font:500 13px var(--mono);text-align:right;font-variant-numeric:tabular-nums}
+.big{display:flex;align-items:baseline;gap:10px}.big strong{font:800 30px var(--display)}
+.chat{display:grid;gap:10px;max-height:360px;overflow:auto;padding-right:4px}
+.msg{background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:10px 12px}
+.msg header{all:unset;display:flex;gap:8px;font-size:12px;color:var(--muted)}
+.msg header b{color:var(--text);font-weight:600}
+.msg p{margin:4px 0 0;white-space:pre-wrap;overflow-wrap:anywhere}
+.compose{display:flex;gap:8px;margin-top:10px}
+.compose textarea{flex:1;min-width:0;background:var(--panel);border:1px solid var(--line);color:var(--text);border-radius:10px;padding:9px 12px;font:inherit;resize:vertical;min-height:44px}
+.compose button{background:var(--sky);color:#04121f;border:0;border-radius:10px;padding:0 16px;font:600 14px var(--body);cursor:pointer}
+.note{font-size:13px;color:var(--muted)}
+footer{color:var(--muted);font-size:12px;padding-top:36px;max-width:70ch}
+@media (prefers-reduced-motion:reduce){*{transition:none!important}}
+</style>
+
+<header><div class="hbar">
+  <div class="brand"><i></i>Telly Verdict</div>
+  <span class="region">UK · October 2026</span>
+  <input id="q" type="search" placeholder="Search films and series" aria-label="Search">
+</div></header>
+
+<div class="wrap">
+  <section class="intro">
+    <h1>What's new on UK streaming, and is it any good?</h1>
+    <p>New films and series arriving on Netflix, Prime Video, Apple TV, Disney+ and Paramount+ in the UK this month. Open a title to give your verdict, score it on six scales and talk it over with everyone else.</p>
+  </section>
+  <div class="filters" id="filters"></div>
+  <div class="grid" id="grid"></div>
+  <footer>Listings compiled from platform announcements for UK release dates in October 2026. Ratings and chat come from people using this page.</footer>
+</div>
+
+<dialog id="dlg"><div id="dcontent"></div></dialog>
+
+<script>
+const PLATFORMS = {
+  "Netflix":"#e50914","Prime Video":"#1f9be8","Apple TV":"#a2aab0","Disney+":"#1b3de0","Paramount+":"#0064ff"
+};
+const TITLES = [
+  {id:"east-of-eden",t:"East of Eden",k:"Series",p:"Netflix",d:"2026-10-01",g:"Drama",c:"Florence Pugh",s:"A limited series of Steinbeck's novel. The Trask family settles in California's Salinas Valley, and the arrival of the ruthless Cathy Ames shapes the family for generations."},
+  {id:"kill-jackie",t:"Kill Jackie",k:"Series",p:"Prime Video",d:"2026-10-02",g:"Thriller",c:"Catherine Zeta-Jones, Daniel Ings, Sidse Babett Knudsen",s:"A one-time cocaine dealer turned art dealer goes after the hitmen who have been paid to kill her."},
+  {id:"doing-life",t:"Doing Life",k:"Film",p:"Netflix",d:"2026-10-02",g:"Drama",c:"Tyler Perry (writer-director)",s:"A struggling single mother and a reformed ex-convict find a second chance with each other."},
+  {id:"schumacher-94",t:"Schumacher '94: The Birth of a Legend",k:"Film",p:"Netflix",d:"2026-10-02",g:"Documentary",c:"Michael Schumacher",s:"A documentary about the 1994 Formula 1 season that made Michael Schumacher a champion."},
+  {id:"godzilla-kong",t:"Godzilla x Kong: The New Empire",k:"Film",p:"Netflix",d:"2026-10-05",g:"Action / Sci-fi",c:"Rebecca Hall, Brian Tyree Henry, Dan Stevens",s:"Godzilla and Kong team up against a huge new threat from deep inside the Hollow Earth."},
+  {id:"carrie",t:"Carrie",k:"Series",p:"Prime Video",d:"2026-10-07",g:"Horror",c:"Summer H. Howell · created by Mike Flanagan",s:"A new take on Stephen King's novel. A teenager with telekinetic powers copes with family tragedy, online bullying and cruel classmates."},
+  {id:"small-prophets",t:"Small Prophets",k:"Series",p:"Apple TV",d:"2026-10-07",g:"Comedy-drama",c:"Pearce Quigley, Michael Palin, Mackenzie Crook, Lauren Patel",s:"From Mackenzie Crook. A quiet, eccentric man follows an old recipe to grow tiny water creatures that seem able to predict the future."},
+  {id:"inside-the-circle",t:"Inside the Circle",k:"Series",p:"Netflix",d:"2026-10-07",g:"Drama",c:"Mexican drama",s:"A leaked video drags four lifelong friends into blackmail and exposes secrets that threaten all of them."},
+  {id:"below",t:"Below",k:"Series",p:"Netflix",d:"2026-10-08",g:"Horror / Thriller",c:"Josh Hartnett",s:"A fisherman in a remote town fights to protect his family from a creature rising from the deep sea."},
+  {id:"animals",t:"Animals",k:"Film",p:"Netflix",d:"2026-10-09",g:"Crime thriller",c:"Ben Affleck (director, star)",s:"A mayoral candidate and his wife go to extreme lengths to raise a ransom after their son is kidnapped."},
+  {id:"a-day-like-no-other",t:"A Day Like No Other",k:"Series",p:"Netflix",d:"2026-10-09",g:"Biographical drama",c:"Spanish limited series",s:"Eight episodes on the life of the singer Raphael, from post-war Spain to stages around the world."},
+  {id:"treasure-island",t:"Treasure Island",k:"Series",p:"Paramount+",d:"2026-10-12",g:"Adventure",c:"Hayley Atwell, David Oyelowo, Tom Sweet",s:"A mother and son sail on the Hispaniola after a legendary treasure, with Long John Silver plotting mutiny."},
+  {id:"visionquest",t:"VisionQuest",k:"Series",p:"Disney+",d:"2026-10-14",g:"Superhero",c:"Paul Bettany, James Spader",s:"Vision, in hiding and sharing his mind with AI personas, goes on the run with a young boy once a bounty is put on his head."},
+  {id:"the-diplomat",t:"The Diplomat",k:"Series",p:"Netflix",d:"2026-10-15",g:"Political thriller",c:"Keri Russell, Rufus Sewell, Allison Janney",s:"The US ambassador to the UK faces a looming war after her husband helps steal a Russian weapon."},
+  {id:"the-terminal-list",t:"The Terminal List",k:"Series",p:"Prime Video",d:"2026-10-21",g:"Military thriller",c:"Chris Pratt",s:"A former Navy SEAL takes a presidential pardon in return for stopping a conspiracy that runs from Russia to Virginia."},
+  {id:"nobody-wants-this",t:"Nobody Wants This",k:"Series",p:"Netflix",d:"2026-10-22",g:"Romantic comedy",c:"Kristen Bell, Adam Brody",s:"The podcaster and the rabbi keep making their unlikely relationship work as they plan to move in together."},
+  {id:"nocturne",t:"Nocturne",k:"Series",p:"Apple TV",d:"2026-10-30",g:"Crime",c:"Liev Schreiber, Stephen Graham",s:"An ex-soldier turned homicide detective moves his family to a small town and is targeted by a killer who buries victims alive."},
+];
+const VERDICTS = [
+  {k:"Skip",c:"var(--skip)",n:"Not worth it"},
+  {k:"Timepass",c:"var(--time)",n:"Fine with a brew"},
+  {k:"Go for it",c:"var(--go)",n:"Recommended"},
+  {k:"Perfection",c:"var(--perf)",n:"Must watch"},
+];
+const ASPECTS = ["Story","Acting","Direction","Visuals","Sound","Pacing"];
+const TODAY = "2026-10-15";
+
+const S = { filter:"All", q:"", ratings:{}, chat:[], db:null, user:null, me:null, mine:{}, open:null, names:{} };
+const $ = s => document.querySelector(s);
+const esc = s => String(s??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+const fmt = d => new Date(d+"T12:00:00").toLocaleDateString("en-GB",{day:"numeric",month:"short"});
+function hue(id){let h=0;for(const ch of id)h=(h*31+ch.charCodeAt(0))%360;return h}
+function posterBg(t){const h=hue(t.id),pc=PLATFORMS[t.p];
+  return `background:radial-gradient(120% 80% at 80% 0%, hsl(${h} 70% 45% / .9), transparent 60%),linear-gradient(160deg, hsl(${(h+40)%360} 45% 22%), ${pc} 160%)`}
+
+// ---------- aggregate ratings ----------
+function stats(tid){
+  const rows = Object.values(S.ratings).map(r=>r?.[tid]).filter(Boolean);
+  const v=[0,0,0,0], a={}; ASPECTS.forEach(x=>a[x]=[]);
+  rows.forEach(r=>{ if(r.v>=0&&r.v<4) v[r.v]++; ASPECTS.forEach(x=>{ if(typeof r.a?.[x]==="number") a[x].push(r.a[x]); }); });
+  const avg = {}; ASPECTS.forEach(x=>avg[x]=a[x].length? a[x].reduce((s,n)=>s+n,0)/a[x].length : null);
+  const all = Object.values(avg).filter(x=>x!=null);
+  return { n:rows.length, v, avg, overall: all.length? all.reduce((s,n)=>s+n,0)/all.length : null };
+}
+
+// ---------- grid ----------
+function renderFilters(){
+  const opts=["All","Films","Series","Out now","Coming up","|",...Object.keys(PLATFORMS)];
+  $("#filters").innerHTML = opts.map(o=>o==="|"?'<span class="sep"></span>':`<button class="f" aria-pressed="${S.filter===o}" data-f="${esc(o)}">${esc(o)}</button>`).join("");
+}
+$("#filters").onclick=e=>{const b=e.target.closest(".f"); if(!b) return; S.filter=b.dataset.f; renderFilters(); renderGrid();};
+$("#q").oninput=e=>{S.q=e.target.value.trim().toLowerCase(); renderGrid();};
+
+function pass(t){
+  const f=S.filter;
+  if(f==="Films"&&t.k!=="Film")return false; if(f==="Series"&&t.k!=="Series")return false;
+  if(f==="Out now"&&t.d>TODAY)return false; if(f==="Coming up"&&t.d<=TODAY)return false;
+  if(PLATFORMS[f]&&t.p!==f)return false;
+  if(S.q&&!(t.t+" "+t.c+" "+t.g).toLowerCase().includes(S.q))return false;
+  return true;
+}
+function renderGrid(){
+  const list=TITLES.filter(pass).sort((a,b)=>b.d.localeCompare(a.d));
+  if(!list.length){$("#grid").innerHTML='<p class="empty">No titles match. Try another filter.</p>';return;}
+  $("#grid").innerHTML=list.map(t=>{const st=stats(t.id); const tot=st.v.reduce((a,b)=>a+b,0);
+    return `<button class="card" data-id="${t.id}">
+      <div class="poster" style="${posterBg(t)}"><span class="kind">${t.k}</span>
+        ${st.overall!=null?`<span class="score">${st.overall.toFixed(1)}/10</span>`:""}
+        <div class="pt">${esc(t.t)}</div></div>
+      <div class="cmeta"><b>${esc(t.t)}</b>
+        <small><span class="dot" style="background:${PLATFORMS[t.p]}"></span>${t.p} · ${t.d>TODAY?"from ":""}${fmt(t.d)}</small>
+        <div class="vbar" title="${tot} verdicts">${tot?st.v.map((n,i)=>`<span style="width:${n/tot*100}%;background:${VERDICTS[i].c}"></span>`).join(""):""}</div>
+        <small>${tot?`${tot} verdict${tot>1?"s":""}`:"No verdicts yet"}</small></div>
+    </button>`}).join("");
+}
+$("#grid").onclick=e=>{const c=e.target.closest(".card"); if(c) openTitle(c.dataset.id);};
+
+// ---------- detail ----------
+function openTitle(id){
+  S.open=id; const t=TITLES.find(x=>x.id===id);
+  const mine=S.mine[id]||{v:-1,a:{}};
+  $("#dcontent").innerHTML=`
+    <div class="dhead" style="${posterBg(t)}">
+      <button class="x" aria-label="Close" onclick="dlg.close()">✕</button>
+      <span class="label" style="color:#ffffffb0">${t.k} · ${esc(t.g)}</span>
+      <h2>${esc(t.t)}</h2>
+      <div class="facts"><span>${t.p}</span><span>UK: ${fmt(t.d)} 2026</span><span>${t.d>TODAY?"Coming up":"Streaming now"}</span></div>
+      <p>${esc(t.s)}</p>
+      <p style="font-size:13px;opacity:.85">${esc(t.c)}</p>
+    </div>
+    <div class="dbody">
+      <section>
+        <div class="agg" id="agg"></div>
+        <h3>Your verdict</h3>
+        <div class="verdicts" id="vsel">${VERDICTS.map((v,i)=>`<button class="vbtn" style="--c:${v.c}" data-v="${i}" aria-pressed="${mine.v===i}">${v.k}<small>${v.n}</small></button>`).join("")}</div>
+        <div style="margin-top:16px" class="label">Score each part, 1 to 10</div>
+        ${ASPECTS.map(x=>{const val=mine.a[x]??5;return `<label class="aspect"><span>${x}</span><input type="range" min="1" max="10" step="1" id="a-${x}" value="${val}"><span id="o-${x}">${val}</span></label>`}).join("")}
+        <button class="save" id="save">Save my rating</button><span class="status" id="rstat"></span>
+      </section>
+      <section>
+        <h3>Chat</h3>
+        <div class="chat" id="chat"></div>
+        <form class="compose" id="compose"><textarea id="msg" maxlength="1000" placeholder="What did you think? No spoilers without a warning."></textarea><button>Post</button></form>
+        <p class="note" id="cnote"></p>
+      </section>
+    </div>`;
+  let pick=mine.v;
+  $("#vsel").onclick=e=>{const b=e.target.closest(".vbtn"); if(!b)return; pick=+b.dataset.v; $("#vsel").querySelectorAll(".vbtn").forEach(x=>x.setAttribute("aria-pressed",x===b));};
+  ASPECTS.forEach(x=>$("#a-"+x).oninput=e=>$("#o-"+x).textContent=e.target.value);
+  $("#save").onclick=()=>saveRating(id,pick);
+  $("#compose").onsubmit=e=>{e.preventDefault(); postMsg(id);};
+  gate(); renderAgg(); renderChat();
+  dlg.showModal();
+}
+function gate(){
+  const can=!!(S.db&&S.me);
+  const why = !S.db ? "Sign in to claude.ai to rate and chat." : (!S.me ? "Connecting…" : "");
+  if($("#save")){ $("#save").disabled=!can; $("#rstat").textContent=why; }
+  if($("#msg")){ $("#msg").disabled=!can; $("#compose button").disabled=!can; $("#cnote").textContent=why; }
+}
+function renderAgg(){
+  if(!$("#agg"))return; const st=stats(S.open); const tot=st.n;
+  const top = tot? st.v.indexOf(Math.max(...st.v)) : -1;
+  $("#agg").innerHTML = tot ? `
+    <div class="big"><strong>${st.overall!=null?st.overall.toFixed(1):"–"}</strong><span class="note">/10 from ${tot} ${tot>1?"people":"person"}${top>=0?` · mostly <b style="color:${VERDICTS[top].c}">${VERDICTS[top].k}</b>`:""}</span></div>
+    <div class="vbar" style="height:8px">${st.v.map((n,i)=>`<span style="width:${n/tot*100}%;background:${VERDICTS[i].c}"></span>`).join("")}</div>
+    ${ASPECTS.map(x=>`<div class="aggrow"><span>${x}</span><div class="meter"><i style="width:${(st.avg[x]??0)*10}%"></i></div><b>${st.avg[x]!=null?st.avg[x].toFixed(1):"–"}</b></div>`).join("")}`
+    : `<span class="note">Nobody has rated this yet. Be the first.</span>`;
+}
+async function renderChat(){
+  const box=$("#chat"); if(!box)return;
+  const msgs=S.chat.filter(m=>m.tid===S.open);
+  if(!msgs.length){box.innerHTML='<p class="note">No messages yet. Start the conversation.</p>';return;}
+  const ids=[...new Set(msgs.map(m=>m.uid))];
+  let ps={}; try{ ps = S.user? await S.user.profiles(ids) : {}; }catch{}
+  box.innerHTML=msgs.map(m=>{const vr=S.ratings[m.uid]?.[m.tid];
+    return `<div class="msg"><header><b>${esc(ps[m.uid]?.name||"Someone")}</b>${vr&&vr.v>=0?`<span style="color:${VERDICTS[vr.v].c}">${VERDICTS[vr.v].k}</span>`:""}<span>${new Date(m.ts).toLocaleString("en-GB",{day:"numeric",month:"short",hour:"2-digit",minute:"2-digit"})}</span></header><p>${esc(m.text)}</p></div>`}).join("");
+  box.scrollTop=box.scrollHeight;
+}
+
+async function saveRating(tid,v){
+  if(v<0){$("#rstat").textContent="Pick a verdict first.";return;}
+  const a={}; ASPECTS.forEach(x=>a[x]=+$("#a-"+x).value);
+  const next={...S.mine,[tid]:{v,a,ts:Date.now()}};
+  $("#save").disabled=true; $("#rstat").textContent="Saving…";
+  try{ await S.db.doc("ratings/"+S.me).set({r:next}); S.mine=next; $("#rstat").textContent="Saved."; }
+  catch(e){ $("#rstat").textContent = e?.code==="permission_denied"||e?.code==="invalid_argument" ? "You can view this page but not rate. Ask the owner for Contributor access." : "Couldn't save. Try again."; }
+  $("#save").disabled=false;
+}
+async function postMsg(tid){
+  const text=$("#msg").value.trim(); if(!text)return;
+  $("#compose button").disabled=true;
+  try{ await S.db.collection("chat").add({tid,uid:S.me,text,ts:Date.now()}); $("#msg").value=""; $("#cnote").textContent=""; }
+  catch(e){ $("#cnote").textContent = e?.code==="permission_denied"||e?.code==="invalid_argument" ? "You can read the chat but not post. Ask the owner for Contributor access." : "Couldn't post. Try again."; }
+  $("#compose button").disabled=false;
+}
+
+// ---------- boot ----------
+renderFilters(); renderGrid();
+(async()=>{
+  const [db,user]=await Promise.all(["db","user"].map(n=>window.claude?.use?window.claude.use(n):null));
+  S.db=db; S.user=user;
+  if(user){ try{ S.me=await user.id(); }catch{} }
+  gate();
+  if(!db) return;
+  db.collection("ratings").onSnapshot(snap=>{
+    const r={}; snap.docs.forEach(d=>{ if(d.exists) r[d.id]=d.data()?.r||{}; });
+    S.ratings=r; if(S.me&&r[S.me]) S.mine=r[S.me];
+    renderGrid(); renderAgg(); renderChat();
+  },()=>{});
+  db.collection("chat").orderBy("ts","asc").limit(1000).onSnapshot(snap=>{
+    S.chat=snap.docs.filter(d=>d.exists).map(d=>d.data()).filter(m=>m&&typeof m.text==="string");
+    renderChat();
+  },()=>{});
+})();
+</script>
