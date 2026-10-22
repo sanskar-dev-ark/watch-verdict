@@ -1,4 +1,4 @@
-// Sofa Verdict front end: a small single-page app with history routing.
+// Watch Verdict front end: a small single-page app with history routing.
 const VERDICTS = [
   { k: "Skip", c: "var(--skip)", n: "Not worth it" },
   { k: "Timepass", c: "var(--time)", n: "Fine with a brew" },
@@ -234,7 +234,7 @@ function openAuth(mode, next) {
       <label>Password<input id="fPass" type="password" autocomplete="current-password" required></label>
       <div id="captcha"></div><p class="err" id="fErr"></p><button class="btn">Log in</button>
       <p class="note"><a href="#" data-switch="forgot">Forgot your password?</a> · New here? <a href="#" data-switch="signup">Create an account</a></p>`,
-    signup: `<h2>Join Sofa Verdict</h2><p class="note">Track what you watch, give verdicts and talk about new UK releases.</p>${google}
+    signup: `<h2>Join Watch Verdict</h2><p class="note">Track what you watch, give verdicts and talk about new UK releases.</p>${google}
       <label>Display name<input id="fName" maxlength="50" autocomplete="name"></label>
       <label>Username<input id="fUser" maxlength="24" autocomplete="username" required pattern="[a-z0-9_]{3,24}"><small class="note" id="uMsg">3 to 24 lowercase letters, numbers or underscores.</small></label>
       <label>Email<input id="fEmail" type="email" autocomplete="email" required></label>
@@ -337,7 +337,7 @@ async function pageHome() {
 
 async function pageTitle(key) {
   const t = await api("/api/title/" + key);
-  document.title = `${t.title}${t.year ? ` (${t.year})` : ""} – reviews, verdict and where to watch in the UK | Sofa Verdict`;
+  document.title = `${t.title}${t.year ? ` (${t.year})` : ""} – reviews, verdict and where to watch in the UK | Watch Verdict`;
   const canonical = titleHref(t.key, t.title, t.year);
   if (location.pathname !== canonical) history.replaceState(null, "", canonical + location.search);
   setCanonical(canonical);
@@ -520,7 +520,7 @@ function collectionPicker(key, ref) {
 
 async function pagePerson(id) {
   const p = await api("/api/person/" + id);
-  document.title = `${p.name} – films and TV shows | Sofa Verdict`;
+  document.title = `${p.name} – films and TV shows | Watch Verdict`;
   if (location.pathname !== personHref(p)) history.replaceState(null, "", personHref(p));
   setCanonical(personHref(p));
   const age = p.born ? Math.floor(((p.died ? new Date(p.died) : new Date()) - new Date(p.born)) / 31557600000) : null;
@@ -661,7 +661,7 @@ async function pageProfile(username) {
   const tab = new URLSearchParams(location.search).get("tab") || "reviews";
   const p = await api("/api/u/" + username);
   const u = p.user;
-  document.title = `${u.name} (@${u.username}) · Sofa Verdict`;
+  document.title = `${u.name} (@${u.username}) · Watch Verdict`;
   const tot = p.stats.reviews;
   $("#app").innerHTML = `<section class="profileHead">
       ${avatar(u, 88)}
@@ -719,7 +719,7 @@ const colCard = c => `<a class="colCard" href="/collection/${c.id}" data-link><d
 async function pageCollection(id) {
   const { collection: c } = await api("/api/collection/" + id);
   const mine = state.me && c.owner?.id === state.me.id;
-  document.title = `${c.name} · Sofa Verdict`;
+  document.title = `${c.name} · Watch Verdict`;
   $("#app").innerHTML = `<section class="intro small"><span class="label">${c.editorial ? "Editor's pick" : "Collection"}</span><h1>${esc(c.name)}</h1>
       ${c.description ? `<p>${esc(c.description)}</p>` : ""}<p class="note">${c.count} title${c.count === 1 ? "" : "s"} · by <a href="/u/${c.owner?.username}" data-link>@${esc(c.owner?.username)}</a></p>
       ${mine ? `<div class="cta"><button class="ghost" id="editCol">Edit</button><button class="ghost danger" id="delCol">Delete collection</button></div>` : state.me ? `<div class="cta"><button class="ghost subtle" data-report="collection" data-id="${c.id}">Report</button>${state.me.role === "admin" ? `<button class="ghost" id="editCol">Edit as editor</button>` : ""}</div>` : ""}</section>
@@ -777,8 +777,8 @@ async function shareCard({ reviewId }) {
   g.fillText(VERDICTS[data.verdict].k, 540, 1480);
   g.fillStyle = "#93a4ab"; g.font = "500 40px Figtree, sans-serif";
   g.fillText(`@${data.username}'s verdict${data.score ? ` · ${data.score.toFixed(1)}/10` : ""}`, 540, 1560);
-  if (data.meter != null) g.fillText(`${data.meter}% of Sofa Verdict members say Go for it or Perfection`, 540, 1640);
-  g.fillStyle = "#ffb547"; g.font = "800 46px 'Bricolage Grotesque', sans-serif"; g.fillText("Sofa Verdict", 540, 1800);
+  if (data.meter != null) g.fillText(`${data.meter}% of Watch Verdict members say Go for it or Perfection`, 540, 1640);
+  g.fillStyle = "#ffb547"; g.font = "800 46px 'Bricolage Grotesque', sans-serif"; g.fillText("Watch Verdict", 540, 1800);
   const blob = await new Promise(res => c.toBlob(res, "image/png"));
   const file = new File([blob], `${slugify(data.title)}-verdict.png`, { type: "image/png" });
   const url = URL.createObjectURL(blob);
@@ -827,7 +827,7 @@ async function pageSettings() {
     const res = await fetch("/api/me/export", { headers: { Authorization: `Bearer ${await token()}` } });
     if (!res.ok) return toast("Couldn't prepare your data. Try again.");
     const url = URL.createObjectURL(await res.blob());
-    const a = document.createElement("a"); a.href = url; a.download = `sofa-verdict-${u.username}.json`; a.click(); URL.revokeObjectURL(url);
+    const a = document.createElement("a"); a.href = url; a.download = `watch-verdict-${u.username}.json`; a.click(); URL.revokeObjectURL(url);
   };
   $("#delAcc").onsubmit = async e => {
     e.preventDefault();
@@ -876,7 +876,7 @@ async function pageAdmin() {
 function pageStatic(which) {
   const pages = {
     privacy: `<h1>Privacy</h1><p class="note">Last updated 21 October 2026. Draft: have it checked before launch.</p>
-      <h2>Who we are</h2><p>Sofa Verdict is a UK guide to new films and TV. [Company name, address and contact email go here.] We are the data controller for the personal data described below.</p>
+      <h2>Who we are</h2><p>Watch Verdict is a UK guide to new films and TV. [Company name, address and contact email go here.] We are the data controller for the personal data described below.</p>
       <h2>What we collect</h2><ul><li>Account details: email address, username, display name, bio and password (stored hashed by our authentication provider).</li><li>What you post: verdicts, scores, reviews, comments, discussion messages, likes, follows, lists and collections.</li><li>Reports you make, and moderation decisions about your posts.</li><li>Technical data needed to run the site: IP address and browser details in server logs, kept for up to 30 days.</li></ul>
       <h2>Why we use it (lawful basis)</h2><ul><li>To provide your account and the community features you sign up for (contract).</li><li>To keep the community safe, prevent spam and abuse, and secure the site (legitimate interests).</li><li>To meet legal obligations, such as responding to lawful requests.</li></ul>
       <h2>What's public</h2><p>Your username, display name, bio, verdicts, reviews, comments, discussion messages, lists, collections, followers and points are public. Your email address is never shown.</p>
@@ -885,14 +885,14 @@ function pageStatic(which) {
       <h2>How long we keep it</h2><p>Until you delete your account. Deleting your account permanently removes your profile and everything you've posted. Backups are overwritten within 30 days.</p>
       <h2>Your rights</h2><p>You can see, download and delete your data any time from <a href="/settings" data-link>Settings</a>. You can also ask us to correct it, restrict or object to how we use it. If you're unhappy with how we've handled your data you can complain to the Information Commissioner's Office (ico.org.uk).</p>`,
     terms: `<h1>Terms of use</h1><p class="note">Last updated 21 October 2026. Draft: have it checked before launch.</p>
-      <h2>Using Sofa Verdict</h2><p>You must be 13 or over to create an account. Keep your login details safe; you're responsible for what's posted from your account.</p>
-      <h2>Your posts</h2><p>You own what you write. By posting it you give us a non-exclusive licence to show it on Sofa Verdict and in share cards you create. Follow the <a href="/rules" data-link>community rules</a>. We may remove posts or block accounts that break them.</p>
+      <h2>Using Watch Verdict</h2><p>You must be 13 or over to create an account. Keep your login details safe; you're responsible for what's posted from your account.</p>
+      <h2>Your posts</h2><p>You own what you write. By posting it you give us a non-exclusive licence to show it on Watch Verdict and in share cards you create. Follow the <a href="/rules" data-link>community rules</a>. We may remove posts or block accounts that break them.</p>
       <h2>Film information</h2><p>Titles, images and availability come from TMDB and JustWatch and may be incomplete or out of date. Check with the streaming service or cinema before you pay. Some cinema links may be affiliate links; we may earn a commission at no cost to you.</p>
       <h2>Liability</h2><p>The site is provided as is. Nothing in these terms limits liability that can't be limited under UK law.</p>
       <h2>Law</h2><p>These terms are governed by the law of England and Wales.</p>`,
     rules: `<h1>Community rules</h1><ul class="ruleList"><li><b>Mark spoilers.</b> Tick "Contains spoilers" on reviews and messages that give anything away.</li><li><b>Review the title, not the people.</b> Criticise films and shows as hard as you like; don't attack other members, cast or crew personally.</li><li><b>No hate speech or harassment.</b> Nothing that targets people for who they are.</li><li><b>No spam or advertising.</b> One link per post at most.</li><li><b>No sexual content</b> and nothing illegal.</li><li><b>One account per person.</b> Don't use extra accounts to like your own reviews or dodge a block.</li></ul><p>Report anything that breaks these rules. Moderators may remove posts and block accounts.</p>`,
   };
-  document.title = `${{ privacy: "Privacy", terms: "Terms of use", rules: "Community rules" }[which]} | Sofa Verdict`;
+  document.title = `${{ privacy: "Privacy", terms: "Terms of use", rules: "Community rules" }[which]} | Watch Verdict`;
   $("#app").innerHTML = `<article class="prose">${pages[which]}</article>`;
 }
 
