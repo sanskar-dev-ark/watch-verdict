@@ -567,7 +567,10 @@ async function pageReleases() {
   const q = new URLSearchParams(location.search);
   const kind = q.get("kind") || "";
   const where = q.get("where") || "";
-  const r = await api("/api/releases?" + new URLSearchParams({ ...(kind && { kind }), ...(where && { where }) }));
+  // Open on this week; earlier weeks on request.
+  const thisMonday = (() => { const d = new Date(); d.setDate(d.getDate() - ((d.getDay() + 6) % 7)); return d.toISOString().slice(0, 10); })();
+  const showPast = q.get("past") === "1";
+  const r = await api("/api/releases?" + new URLSearchParams({ ...(kind && { kind }), ...(where && { where }), ...(!showPast && { from: thisMonday }) }));
   const all = await api("/api/releases" + (kind ? `?kind=${kind}` : ""));
   const outlets = Object.entries(all.releases.reduce((m, x) => (m[x.where] = (m[x.where] || 0) + 1, m), {})).sort((a, b) => b[1] - a[1]).slice(0, 14).map(([w]) => w);
   const set = (k, v) => { const n = new URLSearchParams(location.search); v ? n.set(k, v) : n.delete(k); if (k === "kind") n.delete("where"); go("/releases?" + n, true); };
@@ -583,6 +586,7 @@ async function pageReleases() {
     <div class="chips" id="whereChips"><button class="f" data-where="" aria-pressed="${!where}">All services</button>${outlets.map(w => `<button class="f" data-where="${esc(w)}" aria-pressed="${where === w}"><span class="dot" style="background:${PLATFORMS[w] || "#777"}"></span>${esc(w)}</button>`).join("")}</div>
     ${r.note ? `<div class="banner">${esc(r.note)}</div>` : ""}
     ${kind === "cinema" && !r.releases.length ? `<div class="banner">Cinema releases come from TMDB. Add your key and run <code>npm run releases</code>.</div>` : ""}
+    <p class="note">${showPast ? `<a href="/releases?${new URLSearchParams({ ...(kind && { kind }), ...(where && { where }) })}" data-link>Hide earlier weeks</a>` : `<a href="/releases?${new URLSearchParams({ ...(kind && { kind }), ...(where && { where }), past: "1" })}" data-link>Show the last two weeks too</a>`}</p>
     <div id="weeks">${[...weeks].map(([wk, items]) => {
       const end = new Date(wk + "T12:00:00"); end.setDate(end.getDate() + 6);
       return `<section class="week ${wk === thisMon ? "now" : ""}"><h2>${wk === thisMon ? "This week · " : ""}${fmtDate(wk, { day: "numeric", month: "short" })} – ${fmtDate(end.toISOString(), { day: "numeric", month: "short" })}</h2>

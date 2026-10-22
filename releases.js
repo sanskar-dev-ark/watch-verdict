@@ -104,9 +104,12 @@ async function loadTmdbFilms() {
     });
     for (const m of res.results) {
       if (seen.has(m.id)) continue; seen.add(m.id);
+      // TMDB is user-edited: skip placeholder and near-empty entries (no poster, almost no interest).
+      if (!m.poster_path || !m.overview) continue;
       const rd = await tmdb(`/movie/${m.id}/release_dates`);
       const gb = rd.results.find(r => r.iso_3166_1 === "GB")?.release_dates || [];
       const cert = gb.find(x => x.certification)?.certification || null;
+      if (!cert && m.popularity < 1.5) continue;     // a BBFC certificate means a real UK release, so keep those
       const base = {
         type: "film", title: m.title, season: null,
         genres: (m.genre_ids || []).map(id => genres[id]).filter(Boolean),
@@ -121,8 +124,10 @@ async function loadTmdbFilms() {
         // Where can it be watched? Subscription services first, else rental.
         const wp = (await tmdb(`/movie/${m.id}/watch/providers`)).results?.GB;
         const sub = (wp?.flatrate || []).map(p => providerName[p.provider_id] || p.provider_name);
-        add({ ...base, kind: "streaming", label: sub.length ? "Streaming film" : "Digital (rent/buy)", date: dig.release_date.slice(0, 10),
-          where: sub[0] || (wp?.rent?.length ? "Rent / buy" : "Digital"), alsoOn: sub.slice(1), note: dig.note || null });
+        // Rent-or-buy-only releases are many and mostly small; keep the ones people are likely to look for.
+        if (!sub.length && !cert && m.popularity < 4) continue;
+        add({ ...base, kind: "streaming", label: sub.length ? "New film" : "To rent or buy", date: dig.release_date.slice(0, 10),
+          where: sub[0] || "Rent or buy", alsoOn: sub.slice(1), note: dig.note || null });
         digital++;
       }
     }

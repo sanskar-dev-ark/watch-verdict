@@ -6,6 +6,7 @@ import fs from "node:fs";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 import { execFile } from "node:child_process";
+import crypto from "node:crypto";
 import { hasKey } from "./lib/tmdb.js";
 import * as catalog from "./lib/catalog.js";
 import * as C from "./lib/community.js";
@@ -73,11 +74,18 @@ route("POST", "/api/me", async ({ me, body }) => {
 
 // Catalogue
 route("GET", "/api/status", async () => ({ tmdb: hasKey(), supabase: configured(), titlesWritable: canWriteTitles() }));
-route("GET", "/api/home", async ({ me }) => {
-  const editorial = (await C.editorialCollections()).filter(c => c.items.length)
-    .map(c => ({ id: "c-" + c.id, title: c.name, link: "/collection/" + c.id, items: c.items.slice(0, 16) }));
-  const [h, recent] = await Promise.all([catalog.home(editorial), C.recentReviews(me?.id)]);
-  return { ...h, recentReviews: recent };
+// Editor's picks and latest reviews change slowly; cache them for a minute so the home page is quick.
+let homeCommunity = { at: 0, value: null };
+async function homeCommunityData() {
+  if (homeCommunity.value && Date.now() - homeCommunity.at < 60e3) return homeCommunity.value;
+  const [cols, recent] = await Promise.all([C.editorialCollections(), C.recentReviews(null)]);
+  const editorial = cols.filter(c => c.items.length).map(c => ({ id: "c-" + c.id, title: c.name, link: "/collection/" + c.id, items: c.items.slice(0, 16) }));
+  homeCommunity = { at: Date.now(), value: { editorial, recent } };
+  return homeCommunity.value;
+}
+route("GET", "/api/home", async () => {
+  const { editorial, recent } = await homeCommunityData();
+  return { ...(await catalog.home(editorial)), recentReviews: recent };
 });
 route("GET", "/api/title/:key", async ({ params, me }) => {
   const key = keyOrFail(params.key);
@@ -246,7 +254,11 @@ route("POST", "/api/me/delete", async ({ me, body }) => {
 const MIME = { ".webmanifest": "application/manifest+json", ".html": "text/html; charset=utf-8", ".js": "text/javascript; charset=utf-8", ".css": "text/css; charset=utf-8", ".svg": "image/svg+xml", ".json": "application/json", ".png": "image/png", ".ico": "image/x-icon" };
 const PUBLIC = path.join(ROOT, "public");
 let templateCache = null;
-const template = () => (process.env.NODE_ENV === "production" && templateCache) || (templateCache = fs.readFileSync(path.join(PUBLIC, "index.html"), "utf8"));
+// Stamp CSS and JS links with a content hash so browsers pick up new versions straight after a deploy.
+const assetVersion = f => crypto.createHash("sha1").update(fs.readFileSync(path.join(PUBLIC, f))).digest("hex").slice(0, 10);
+const template = () => (process.env.NODE_ENV === "production" && templateCache) || (templateCache = fs.readFileSync(path.join(PUBLIC, "index.html"), "utf8")
+  .replace('href="/style.css"', `href="/style.css?v=${assetVersion("style.css")}"`)
+  .replace('src="/app.js"', `src="/app.js?v=${assetVersion("app.js")}"`));
 const readReleases = () => { try { return JSON.parse(fs.readFileSync(path.join(ROOT, "data/releases.json"), "utf8")).releases; } catch { return []; } };
 
 http.createServer(async (req, res) => {
@@ -274,7 +286,7 @@ http.createServer(async (req, res) => {
   const rel = path.normalize(decodeURIComponent(url.pathname)).replace(/^([/\\])+/, "");
   const file = path.join(PUBLIC, rel);
   if (file.startsWith(PUBLIC) && path.extname(file) && rel !== "index.html" && fs.existsSync(file) && fs.statSync(file).isFile()) {
-    res.writeHead(200, { "content-type": MIME[path.extname(file)] || "application/octet-stream", "cache-control": "public, max-age=300" });
+    res.writeHead(200, { "content-type": MIME[path.extname(file)] || "application/octet-stream", "cache-control": url.searchParams.has("v") ? "public, max-age=31536000, immutable" : "public, max-age=300" });
     return fs.createReadStream(file).pipe(res);
   }
   if (req.method !== "GET" && req.method !== "HEAD") return json(res, 405, { error: "Method not allowed." });
@@ -294,10 +306,12 @@ http.createServer(async (req, res) => {
   const html = template()
     .replace(/<!--head-->[\s\S]*?<!--\/head-->/, page.head)
     .replace("<!--app-->", page.body);
-  res.writeHead(page.status || 200, { "content-type": "text/html; charset=utf-8", "cache-control": "public, max-age=60" });
+  res.writeHead(page.status || 200, { "content-type": "text/html; charset=utf-8", "cache-control": "no-cache" });
   res.end(req.method === "HEAD" ? undefined : html);
 }).listen(PORT, () => {
   if (process.env.RUN_JOBS === "true") startJobs();
+  // Warm the home page cache so the first visitor doesn't wait for TMDB.
+  if (hasKey()) catalog.home([]).catch(e => console.error("home warm-up:", e.message));
   console.log(`Telly Verdict running at http://localhost:${PORT}`);
   if (!hasKey()) console.log("No TMDB_API_KEY set: copy .env.example to .env and add your key.");
   if (!configured()) console.log("No Supabase settings: community features are off until SUPABASE_URL and SUPABASE_PUBLISHABLE_KEY are set.");

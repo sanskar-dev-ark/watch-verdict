@@ -13,5 +13,5 @@ self.addEventListener("fetch", e => {
       { headers: { "content-type": "text/html; charset=utf-8" } })));
     return;
   }
-  if (FILES.includes(url.pathname)) e.respondWith(fetch(e.request).then(r => { caches.open(SHELL).then(c => c.put(e.request, r.clone())); return r; }).catch(() => caches.match(e.request)));
+  if (FILES.includes(url.pathname) && !url.search) e.respondWith(fetch(e.request).then(r => { caches.open(SHELL).then(c => c.put(e.request, r.clone())); return r; }).catch(() => caches.match(e.request)));
 });
