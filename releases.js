@@ -58,6 +58,7 @@ function fromTvmaze(ep, kind) {
     language: show.language,
     overview: (show.summary || "").replace(/<[^>]+>/g, "").trim(),
     image: show.image?.medium || null,
+    interest: show.weight ?? null,          // TVmaze popularity weighting, 0–100
     ids: { tvmaze: show.id, imdb: show.externals?.imdb || null, tvdb: show.externals?.thetvdb || null },
     source: "TVmaze",
   };
@@ -115,7 +116,7 @@ async function loadTmdbFilms() {
         genres: (m.genre_ids || []).map(id => genres[id]).filter(Boolean),
         language: m.original_language, overview: m.overview,
         image: m.poster_path ? IMG + "w342" + m.poster_path : null,
-        certification: cert, ids: { tmdb: m.id }, source: "TMDB",
+        certification: cert, ids: { tmdb: m.id }, source: "TMDB", interest: Math.round(m.popularity * 10) / 10,
       };
       const cin = gb.filter(x => x.type === 2 || x.type === 3).sort((a, b) => a.release_date.localeCompare(b.release_date))[0];
       if (cin) { add({ ...base, kind: "cinema", label: cin.type === 2 ? "Limited release" : "In cinemas", date: cin.release_date.slice(0, 10), where: "UK cinemas", note: cin.note || null }); cinema++; }
@@ -141,11 +142,23 @@ await loadTvmaze();
 if (hasKey()) await loadTmdbFilms();
 else console.log("TMDB: skipped (no TMDB_API_KEY in .env). Cinema and streaming films need it.");
 
+// "Notable" is what a UK audience is likely to care about; the calendar shows these by default.
+function notable(r) {
+  if (r.source === "TMDB") {
+    if (r.where === "Rent or buy") return r.interest >= 15;            // lots of small rentals; keep the ones people look for
+    return Boolean(r.certification) || r.interest >= 4;
+  }
+  const english = !r.language || r.language === "English" || r.language === "Welsh";
+  if (r.kind === "tv") return english;                                  // UK broadcast channels
+  return (english && (r.interest ?? 0) >= 50) || (r.interest ?? 0) >= 95;
+}
+for (const r of releases.values()) r.notable = notable(r);
+
 const list = [...releases.values()].filter(r => r.date >= FROM && r.date <= TO).sort((a, b) => a.date.localeCompare(b.date) || a.title.localeCompare(b.title));
 fs.mkdirSync(new URL("./data/", import.meta.url), { recursive: true });
 fs.writeFileSync(OUT, JSON.stringify({ generatedAt: new Date().toISOString(), region: "GB", from: FROM, to: TO, count: list.length, releases: list }, null, 1));
 
 const by = k => list.reduce((m, r) => (m[r[k]] = (m[r[k]] || 0) + 1, m), {});
 console.log(`\nSaved ${list.length} releases to data/releases.json`);
-console.log("By kind:", by("kind"));
+console.log("By kind:", by("kind"), "| notable:", list.filter(r => r.notable).length);
 console.log("Top outlets:", Object.entries(by("where")).sort((a, b) => b[1] - a[1]).slice(0, 12).map(([k, v]) => `${k} ${v}`).join(", "));

@@ -9,6 +9,7 @@ import { execFile } from "node:child_process";
 import crypto from "node:crypto";
 import { hasKey } from "./lib/tmdb.js";
 import * as catalog from "./lib/catalog.js";
+import * as uk from "./lib/uk.js";
 import * as C from "./lib/community.js";
 import { configured, verifyToken, publicConfig, DbError, canWriteTitles } from "./lib/supa.js";
 import { renderRoute, sitemap, robots } from "./lib/seo.js";
@@ -85,7 +86,7 @@ async function homeCommunityData() {
 }
 route("GET", "/api/home", async () => {
   const { editorial, recent } = await homeCommunityData();
-  return { ...(await catalog.home(editorial)), recentReviews: recent };
+  return { ...(await uk.ukHome({ releases: readReleases(), editorial })), recentReviews: recent };
 });
 route("GET", "/api/title/:key", async ({ params, me }) => {
   const key = keyOrFail(params.key);
@@ -116,6 +117,7 @@ route("GET", "/api/releases", async ({ query }) => {
   let data; try { data = JSON.parse(fs.readFileSync(path.join(ROOT, "data/releases.json"), "utf8")); } catch { return { releases: [], note: "Run npm run releases to build the UK release calendar." }; }
   let list = data.releases;
   for (const k of ["kind", "where"]) if (query.get(k)) list = list.filter(r => r[k] === query.get(k));
+  if (query.get("notable") === "1") list = list.filter(r => r.notable !== false);
   if (query.get("from")) list = list.filter(r => r.date >= query.get("from"));
   if (query.get("to")) list = list.filter(r => r.date <= query.get("to"));
   return { generatedAt: data.generatedAt, from: data.from, to: data.to, count: list.length, releases: list };
@@ -303,7 +305,7 @@ http.createServer(async (req, res) => {
   }
   if (url.pathname === "/robots.txt") { res.writeHead(200, { "content-type": "text/plain; charset=utf-8" }); return res.end(robots()); }
   if (url.pathname === "/sitemap.xml") {
-    const [home, data] = await Promise.all([catalog.home([]).catch(() => ({ rails: [] })), configured() ? C.sitemapData().catch(() => null) : null]);
+    const [home, data] = await Promise.all([uk.ukHome({ releases: readReleases() }).catch(() => ({ rails: [] })), configured() ? C.sitemapData().catch(() => null) : null]);
     res.writeHead(200, { "content-type": "application/xml; charset=utf-8", "cache-control": "public, max-age=3600" });
     return res.end(sitemap(data, readReleases(), home.rails.flatMap(r => r.items)));
   }
@@ -322,7 +324,7 @@ http.createServer(async (req, res) => {
 }).listen(PORT, () => {
   if (process.env.RUN_JOBS === "true") startJobs();
   // Warm the home page cache so the first visitor doesn't wait for TMDB.
-  if (hasKey()) catalog.home([]).catch(e => console.error("home warm-up:", e.message));
+  if (hasKey()) uk.ukHome({ releases: readReleases() }).catch(e => console.error("home warm-up:", e.message));
   console.log(`Watch Verdict running at http://localhost:${PORT}`);
   if (!hasKey()) console.log("No TMDB_API_KEY set: copy .env.example to .env and add your key.");
   if (!configured()) console.log("No Supabase settings: community features are off until SUPABASE_URL and SUPABASE_PUBLISHABLE_KEY are set.");
@@ -336,7 +338,13 @@ function startJobs() {
     console.log(`[job ${script}] ${err ? "failed: " + (errOut || err.message).trim() : out.trim().split("\n").pop()}`);
     done();
   }));
-  const daily = async () => { await run("releases.js"); if (hasKey() && canWriteTitles()) await run("notify-arrivals.js"); };
+  const daily = async () => {
+    await run("releases.js");
+    if (hasKey() && canWriteTitles()) {
+      await uk.recordInterest().then(n => console.log(`[job interest] recorded ${n} titles`)).catch(e => console.log("[job interest] failed:", e.message));
+      await run("notify-arrivals.js");
+    }
+  };
   daily();
   setInterval(daily, 24 * 3600e3);
 }

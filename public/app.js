@@ -118,7 +118,7 @@ function card(t, extra = "") {
 const grid = (items, empty = "Nothing here yet.") => items?.length ? `<div class="grid">${items.map(t => card(t)).join("")}</div>` : `<p class="empty">${empty}</p>`;
 function rail(r) {
   if (!r.items?.length) return "";
-  return `<section class="rail"><div class="railHead"><h2>${esc(r.title)}</h2>${r.link ? `<a href="${r.link}" data-link class="more">See all</a>` : ""}</div>
+  return `<section class="rail"><div class="railHead"><div><h2>${esc(r.title)}</h2>${r.note ? `<p class="note railNote">${esc(r.note)}</p>` : ""}</div>${r.link ? `<a href="${r.link}" data-link class="more">See all</a>` : ""}</div>
     <div class="railRow">${r.items.map(t => card(t)).join("")}</div></section>`;
 }
 function avatar(u, size = 36) { return `<span class="avatar" style="--s:${size}px;background:hsl(${hue(u?.username)} 45% 35%)">${initials(u?.name || u?.username)}</span>`; }
@@ -537,7 +537,7 @@ async function pageExplore() {
   const type = q.get("type") || "movie";
   const f = await api("/api/filters");
   const sel = (name, opts, label) => `<label class="sel">${label}<select data-f="${name}"><option value="">Any</option>${opts.map(o => `<option value="${esc(o.v)}" ${q.get(name) === String(o.v) ? "selected" : ""}>${esc(o.l)}</option>`).join("")}</select></label>`;
-  $("#app").innerHTML = `<section class="intro small"><h1>Explore</h1><p>Browse by genre, language, country and UK streaming service.</p></section>
+  $("#app").innerHTML = `<section class="intro small"><h1>Explore</h1><p>Everything you can stream in the UK, by genre, language, country and service.</p></section>
     <div class="filtersBar">
       <div class="seg" id="typeSeg"><button data-type="movie" aria-pressed="${type === "movie"}">Films</button><button data-type="tv" aria-pressed="${type === "tv"}">Shows</button></div>
       ${sel("genre", f.genres[type].map(g => ({ v: g.id, l: g.name })), "Genre")}
@@ -570,8 +570,9 @@ async function pageReleases() {
   // Open on this week; earlier weeks on request.
   const thisMonday = (() => { const d = new Date(); d.setDate(d.getDate() - ((d.getDay() + 6) % 7)); return d.toISOString().slice(0, 10); })();
   const showPast = q.get("past") === "1";
-  const r = await api("/api/releases?" + new URLSearchParams({ ...(kind && { kind }), ...(where && { where }), ...(!showPast && { from: thisMonday }) }));
-  const all = await api("/api/releases" + (kind ? `?kind=${kind}` : ""));
+  const showAll = q.get("all") === "1";
+  const r = await api("/api/releases?" + new URLSearchParams({ ...(kind && { kind }), ...(where && { where }), ...(!showPast && { from: thisMonday }), ...(!showAll && { notable: "1" }) }));
+  const all = await api("/api/releases?" + new URLSearchParams({ ...(kind && { kind }), ...(!showAll && { notable: "1" }), from: thisMonday }));
   const outlets = Object.entries(all.releases.reduce((m, x) => (m[x.where] = (m[x.where] || 0) + 1, m), {})).sort((a, b) => b[1] - a[1]).slice(0, 14).map(([w]) => w);
   const set = (k, v) => { const n = new URLSearchParams(location.search); v ? n.set(k, v) : n.delete(k); if (k === "kind") n.delete("where"); go("/releases?" + n, true); };
   // Group by week starting Monday.
@@ -586,6 +587,7 @@ async function pageReleases() {
     <div class="chips" id="whereChips"><button class="f" data-where="" aria-pressed="${!where}">All services</button>${outlets.map(w => `<button class="f" data-where="${esc(w)}" aria-pressed="${where === w}"><span class="dot" style="background:${PLATFORMS[w] || "#777"}"></span>${esc(w)}</button>`).join("")}</div>
     ${r.note ? `<div class="banner">${esc(r.note)}</div>` : ""}
     ${kind === "cinema" && !r.releases.length ? `<div class="banner">Cinema releases come from TMDB. Add your key and run <code>npm run releases</code>.</div>` : ""}
+    <p class="note">${showAll ? `Showing every release. <a href="/releases?${new URLSearchParams({ ...(kind && { kind }), ...(where && { where }) })}" data-link>Show the main releases only</a>` : `Showing the main UK releases. <a href="/releases?${new URLSearchParams({ ...(kind && { kind }), ...(where && { where }), all: "1" })}" data-link>Show everything, including niche and international titles</a>`}</p>
     <p class="note">${showPast ? `<a href="/releases?${new URLSearchParams({ ...(kind && { kind }), ...(where && { where }) })}" data-link>Hide earlier weeks</a>` : `<a href="/releases?${new URLSearchParams({ ...(kind && { kind }), ...(where && { where }), past: "1" })}" data-link>Show the last two weeks too</a>`}</p>
     <div id="weeks">${[...weeks].map(([wk, items]) => {
       const end = new Date(wk + "T12:00:00"); end.setDate(end.getDate() + 6);
