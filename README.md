@@ -1,4 +1,4 @@
-# Telly Verdict
+# Sofa Verdict
 
 A UK guide to new films and series in cinemas, on streaming and on TV, rated and reviewed by the people who watched them. Modelled on Moctale, focused on the UK.
 
@@ -31,7 +31,7 @@ A UK guide to new films and series in cinemas, on streaming and on TV, rated and
 - **Status codes**: unknown pages return 404; if TMDB is down, pages return 503 so search engines retry instead of indexing an empty page.
 - **Kept out of the index**: search, following feed, profiles with no written reviews, collections with fewer than 3 titles.
 - **`/sitemap.xml`** lists the home page, release calendars, explore, every title seen on the site, profiles with reviews and collections. **`/robots.txt`** points to it and blocks `/api/`.
-- Set `SITE_URL` in `.env` to the live domain (for example `https://tellyverdict.co.uk`) so canonical links and the sitemap use it. Submit the sitemap in Google Search Console after launch.
+- Set `SITE_URL` in `.env` to the live domain (for example `https://sofaverdict.co.uk`) so canonical links and the sitemap use it. Submit the sitemap in Google Search Console after launch.
 
 ## Hosting
 
@@ -75,7 +75,7 @@ TMDB's free key is for non-commercial use. A site with ads or subscriptions need
 Example crontab line (03:00 every day):
 
 ```
-0 3 * * * cd /path/to/telly-verdict && /usr/local/bin/node releases.js >> releases.log 2>&1
+0 3 * * * cd /path/to/sofa-verdict && /usr/local/bin/node releases.js >> releases.log 2>&1
 ```
 
 ## Where things live
@@ -95,7 +95,7 @@ Example crontab line (03:00 every day):
 
 ## Accounts and data (Supabase)
 
-Project **telly-verdict** (`surjlsrmbrsouurhmwhv`, London). Sign-up, login, email verification, password reset and Google sign-in run in the browser through Supabase Auth. The server checks each request's access token with Supabase and writes with the member's own token, so the database's row-level security applies to everything a member changes.
+Project **telly-verdict** (`surjlsrmbrsouurhmwhv`, London; named before the rebrand to Sofa Verdict). Sign-up, login, email verification, password reset and Google sign-in run in the browser through Supabase Auth. The server checks each request's access token with Supabase and writes with the member's own token, so the database's row-level security applies to everything a member changes.
 
 **Tables**: `profiles` (created automatically at sign-up; the first account becomes admin), `titles` (snapshot from TMDB, written by the server only), `reviews`, `review_likes`, `review_comments`, `follows`, `marks` (watched / watch later), `collections`, `collection_items`, `discussion`.
 
@@ -107,7 +107,7 @@ Project **telly-verdict** (`surjlsrmbrsouurhmwhv`, London). Sign-up, login, emai
 
 1. **Secret key**: Project Settings → API Keys → create a secret key and paste it into `.env` as `SUPABASE_SECRET_KEY`. Without it, members can't rate or list titles the site hasn't stored yet.
 2. **URLs**: Authentication → URL Configuration. Site URL = your live domain. Redirect URLs: add `http://localhost:3000/**` (and your live domain with `/**`).
-3. **Emails**: Authentication → Emails. Set up custom SMTP (Resend, Postmark or SES) before launch; the built-in sender only allows a few emails an hour. Edit the confirmation and reset templates to say Telly Verdict.
+3. **Emails**: Authentication → Emails. Set up custom SMTP (Resend, Postmark or SES) before launch; the built-in sender only allows a few emails an hour. Edit the confirmation and reset templates to say Sofa Verdict.
 4. **Bot protection**: create a Cloudflare Turnstile widget, turn on Authentication → Attack Protection → CAPTCHA with its secret, and put the site key in `.env` as `TURNSTILE_SITE_KEY`.
 5. **Google sign-in**: Authentication → Providers → Google with a Google Cloud OAuth client, then set `GOOGLE_SIGN_IN=true`.
 6. **Passwords**: Attack Protection → minimum length 8 and leaked-password protection.

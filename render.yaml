@@ -3,7 +3,7 @@
 # Render cron jobs can't write files the web service reads.
 services:
   - type: web
-    name: telly-verdict
+    name: sofa-verdict
     runtime: node
     region: frankfurt          # closest Render region to the London database
     plan: free                 # sleeps after 15 min idle; switch to starter to keep it always on

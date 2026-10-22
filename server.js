@@ -1,4 +1,4 @@
-// Telly Verdict server. No dependencies. Run: node server.js
+// Sofa Verdict server. No dependencies. Run: node server.js
 // Serves the site (server-rendered for search engines), TMDB-backed catalogue APIs,
 // the UK release calendar, and community APIs backed by Supabase (auth + Postgres).
 import http from "node:http";
@@ -240,7 +240,7 @@ route("POST", "/api/notifications/read", async ({ me }) => { need(me); await C.m
 route("GET", "/api/me/export", async ({ me, res }) => {
   need(me);
   const data = await C.exportMyData(me.token, me.id);
-  res.writeHead(200, { "content-type": "application/json; charset=utf-8", "content-disposition": `attachment; filename="telly-verdict-${me.username}.json"`, "cache-control": "no-store" });
+  res.writeHead(200, { "content-type": "application/json; charset=utf-8", "content-disposition": `attachment; filename="sofa-verdict-${me.username}.json"`, "cache-control": "no-store" });
   res.end(JSON.stringify(data, null, 2));
 });
 route("POST", "/api/me/delete", async ({ me, body }) => {
@@ -311,7 +311,7 @@ http.createServer(async (req, res) => {
   let page;
   try { page = await renderRoute(url.pathname, url.searchParams, { releases: readReleases() }); }
   // A failed upstream call gets 503 so search engines retry later instead of indexing an empty page.
-  catch (e) { console.error(e); page = { status: 503, head: '<title>Telly Verdict</title><meta name="robots" content="noindex">', body: "" }; }
+  catch (e) { console.error(e); page = { status: 503, head: '<title>Sofa Verdict</title><meta name="robots" content="noindex">', body: "" }; }
   if (page.redirect) { res.writeHead(301, { location: page.redirect + (url.search || "") }); return res.end(); }
   if (page.title) C.saveTitle(page.title);
   const html = template()
@@ -323,7 +323,7 @@ http.createServer(async (req, res) => {
   if (process.env.RUN_JOBS === "true") startJobs();
   // Warm the home page cache so the first visitor doesn't wait for TMDB.
   if (hasKey()) catalog.home([]).catch(e => console.error("home warm-up:", e.message));
-  console.log(`Telly Verdict running at http://localhost:${PORT}`);
+  console.log(`Sofa Verdict running at http://localhost:${PORT}`);
   if (!hasKey()) console.log("No TMDB_API_KEY set: copy .env.example to .env and add your key.");
   if (!configured()) console.log("No Supabase settings: community features are off until SUPABASE_URL and SUPABASE_PUBLISHABLE_KEY are set.");
   else if (!canWriteTitles()) console.log("SUPABASE_SECRET_KEY is missing: members can't rate titles until it's set.");
