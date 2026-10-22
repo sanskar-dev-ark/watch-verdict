@@ -290,6 +290,17 @@ http.createServer(async (req, res) => {
     return fs.createReadStream(file).pipe(res);
   }
   if (req.method !== "GET" && req.method !== "HEAD") return json(res, 405, { error: "Method not allowed." });
+  // Health check for Render and uptime monitors. /healthz answers instantly; /healthz?deep=1 also checks TMDB and Supabase.
+  if (url.pathname === "/healthz") {
+    const out = { status: "ok", uptime: Math.round(process.uptime()), tmdbKey: hasKey(), supabase: configured(), titlesWritable: canWriteTitles(), releases: readReleases().length };
+    if (url.searchParams.get("deep") === "1") {
+      const probe = async (fn) => { const t = Date.now(); try { await fn(); return { ok: true, ms: Date.now() - t }; } catch (e) { return { ok: false, error: e.message }; } };
+      [out.tmdb, out.database] = await Promise.all([probe(() => catalog.filters()), probe(() => C.titleRefs(["movie-0"]))]);
+      if (!out.tmdb.ok || !out.database.ok) out.status = "degraded";
+    }
+    res.writeHead(out.status === "ok" ? 200 : 503, { "content-type": "application/json", "cache-control": "no-store" });
+    return res.end(JSON.stringify(out));
+  }
   if (url.pathname === "/robots.txt") { res.writeHead(200, { "content-type": "text/plain; charset=utf-8" }); return res.end(robots()); }
   if (url.pathname === "/sitemap.xml") {
     const [home, data] = await Promise.all([catalog.home([]).catch(() => ({ rails: [] })), configured() ? C.sitemapData().catch(() => null) : null]);

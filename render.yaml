@@ -6,10 +6,10 @@ services:
     name: telly-verdict
     runtime: node
     region: frankfurt          # closest Render region to the London database
-    plan: starter              # always-on; the free plan sleeps, which stops the daily jobs
+    plan: free                 # sleeps after 15 min idle; switch to starter to keep it always on
     buildCommand: "true"       # no dependencies to install
     startCommand: node server.js
-    healthCheckPath: /api/status
+    healthCheckPath: /healthz
     envVars:
       - key: NODE_ENV
         value: production
